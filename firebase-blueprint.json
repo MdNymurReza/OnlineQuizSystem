@@ -1,0 +1,150 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Represents a user in the system (Student, Teacher, or Admin).",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["student", "teacher", "admin"] },
+        "studentId": { "type": "string", "description": "Only for students" },
+        "department": { "type": "string" },
+        "approved": { "type": "boolean", "description": "Approval status for teachers" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role", "name"]
+    },
+    "Quiz": {
+      "title": "Quiz",
+      "description": "Represents a quiz created by a teacher.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "quizCode": { "type": "string" },
+        "duration": { "type": "integer", "description": "Duration in minutes" },
+        "startTime": { "type": "string", "format": "date-time" },
+        "endTime": { "type": "string", "format": "date-time" },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "negativeMarking": { "type": "number" },
+            "randomize": { "type": "boolean" },
+            "oneAttempt": { "type": "boolean" },
+            "fullscreenRequired": { "type": "boolean" }
+          }
+        },
+        "published": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "teacherId", "quizCode", "duration"]
+    },
+    "Question": {
+      "title": "Question",
+      "description": "A question within a quiz.",
+      "type": "object",
+      "properties": {
+        "quizId": { "type": "string" },
+        "text": { "type": "string" },
+        "type": { "type": "string", "enum": ["mcq", "tf", "short"] },
+        "options": { "type": "array", "items": { "type": "string" } },
+        "correctAnswer": { "type": "string" },
+        "points": { "type": "number" }
+      },
+      "required": ["quizId", "text", "type", "points"]
+    },
+    "Submission": {
+      "title": "Submission",
+      "description": "A student's attempt at a quiz.",
+      "type": "object",
+      "properties": {
+        "quizId": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "answers": { "type": "object" },
+        "startTime": { "type": "string", "format": "date-time" },
+        "submitTime": { "type": "string", "format": "date-time" },
+        "violations": { "type": "array", "items": { "type": "object" } },
+        "score": { "type": "number" },
+        "graded": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["ongoing", "submitted", "disqualified"] }
+      },
+      "required": ["quizId", "studentId", "startTime"]
+    },
+    "Section": {
+      "title": "Section",
+      "description": "A department or section created by a teacher for student enrollment.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "teacherName": { "type": "string" },
+        "enrollmentPassword": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "teacherId", "teacherName"]
+    },
+    "Enrollment": {
+      "title": "Enrollment",
+      "description": "A student's enrollment in a section.",
+      "type": "object",
+      "properties": {
+        "sectionId": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "enrolledAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["sectionId", "studentId", "studentName"]
+    },
+    "Announcement": {
+      "title": "Announcement",
+      "description": "An announcement or notification for a section.",
+      "type": "object",
+      "properties": {
+        "sectionId": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "type": { "type": "string", "enum": ["exam", "general"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["sectionId", "teacherId", "title", "content"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/quizzes/{quizId}": {
+      "schema": "Quiz",
+      "description": "Quizzes"
+    },
+    "/quizzes/{quizId}/questions/{questionId}": {
+      "schema": "Question",
+      "description": "Questions for a quiz"
+    },
+    "/submissions/{submissionId}": {
+      "schema": "Submission",
+      "description": "Student quiz submissions"
+    },
+    "/sections/{sectionId}": {
+      "schema": "Section",
+      "description": "Sections/Departments"
+    },
+    "/sections/{sectionId}/enrollments/{enrollmentId}": {
+      "schema": "Enrollment",
+      "description": "Student enrollments in a section"
+    },
+    "/sections/{sectionId}/announcements/{announcementId}": {
+      "schema": "Announcement",
+      "description": "Announcements for a section"
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "name": "EduQuiz Pro: University Online Quiz System",
+  "description": "A comprehensive university-level online quiz platform with Student, Teacher, and Admin panels, featuring advanced anti-cheating mechanisms and real-time monitoring.",
+  "requestFramePermissions": []
+}
