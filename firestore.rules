@@ -81,7 +81,8 @@ service cloud.firestore {
       allow read: if isAuthenticated() && (
         isOwner(resource.data.studentId) || 
         (isTeacher() && get(/databases/$(database)/documents/quizzes/$(resource.data.quizId)).data.teacherId == request.auth.uid) ||
-        isAdmin()
+        isAdmin() ||
+        (isStudent() && resource.data.status == 'submitted') // Allow students to see all submitted quizzes for leaderboard
       );
       allow create: if isStudent() && request.resource.data.studentId == request.auth.uid;
       allow update: if isAuthenticated() && (

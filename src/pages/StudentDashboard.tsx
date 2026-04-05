@@ -62,25 +62,33 @@ export default function StudentDashboard({ user }: StudentDashboardProps) {
 
   useEffect(() => {
     const fetchMyEnrollments = async () => {
-      const enrolls: Record<string, Enrollment> = {};
-      const announces: Announcement[] = [];
+      try {
+        const enrolls: Record<string, Enrollment> = {};
+        const announces: Announcement[] = [];
 
-      for (const section of allSections) {
-        const q = query(collection(db, 'sections', section.id, 'enrollments'), where('studentId', '==', user.uid));
-        const snapshot = await getDocs(q);
-        if (!snapshot.empty) {
-          enrolls[section.id] = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Enrollment;
-          
-          // Fetch announcements for this section
-          const annQ = query(collection(db, 'sections', section.id, 'announcements'), orderBy('createdAt', 'desc'), limit(5));
-          const annSnapshot = await getDocs(annQ);
-          annSnapshot.docs.forEach(doc => {
-            announces.push({ id: doc.id, ...doc.data() } as Announcement);
-          });
+        for (const section of allSections) {
+          try {
+            const q = query(collection(db, 'sections', section.id, 'enrollments'), where('studentId', '==', user.uid));
+            const snapshot = await getDocs(q);
+            if (!snapshot.empty) {
+              enrolls[section.id] = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Enrollment;
+              
+              // Fetch announcements for this section
+              const annQ = query(collection(db, 'sections', section.id, 'announcements'), orderBy('createdAt', 'desc'), limit(5));
+              const annSnapshot = await getDocs(annQ);
+              annSnapshot.docs.forEach(doc => {
+                announces.push({ id: doc.id, ...doc.data() } as Announcement);
+              });
+            }
+          } catch (err) {
+            console.error(`Error fetching data for section ${section.id}:`, err);
+          }
         }
+        setMyEnrollments(enrolls);
+        setAnnouncements(announces.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+      } catch (err) {
+        console.error("Error in fetchMyEnrollments:", err);
       }
-      setMyEnrollments(enrolls);
-      setAnnouncements(announces.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
     };
 
     if (allSections.length > 0) {
@@ -94,6 +102,8 @@ export default function StudentDashboard({ user }: StudentDashboardProps) {
       const q = query(collection(db, 'submissions'), where('status', '==', 'submitted'), limit(200));
       const snapshot = await getDocs(q);
       const allSubs = snapshot.docs.map(doc => doc.data() as Submission);
+      
+      console.log("StudentDashboard Leaderboard raw data:", allSubs);
       
       if (allSubs.length === 0) {
         console.log("No submitted quizzes found for leaderboard tab.");
@@ -121,22 +131,30 @@ export default function StudentDashboard({ user }: StudentDashboardProps) {
 
   useEffect(() => {
     const fetchSubmissions = async () => {
-      const q = query(collection(db, 'submissions'), where('studentId', '==', user.uid));
-      const querySnapshot = await getDocs(q);
-      const subs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Submission));
-      setSubmissions(subs);
+      try {
+        const q = query(collection(db, 'submissions'), where('studentId', '==', user.uid));
+        const querySnapshot = await getDocs(q);
+        const subs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Submission));
+        setSubmissions(subs);
 
-      // Fetch quiz details for each submission
-      const quizDetails: Record<string, Quiz> = {};
-      for (const sub of subs) {
-        if (!quizDetails[sub.quizId]) {
-          const quizDoc = await getDoc(doc(db, 'quizzes', sub.quizId));
-          if (quizDoc.exists()) {
-            quizDetails[sub.quizId] = { id: quizDoc.id, ...quizDoc.data() } as Quiz;
+        // Fetch quiz details for each submission
+        const quizDetails: Record<string, Quiz> = {};
+        for (const sub of subs) {
+          if (!quizDetails[sub.quizId]) {
+            try {
+              const quizDoc = await getDoc(doc(db, 'quizzes', sub.quizId));
+              if (quizDoc.exists()) {
+                quizDetails[sub.quizId] = { id: quizDoc.id, ...quizDoc.data() } as Quiz;
+              }
+            } catch (err) {
+              console.error(`Error fetching quiz ${sub.quizId}:`, err);
+            }
           }
         }
+        setQuizzes(quizDetails);
+      } catch (err) {
+        console.error("Error fetching submissions:", err);
       }
-      setQuizzes(quizDetails);
     };
 
     fetchSubmissions();

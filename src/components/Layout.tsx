@@ -1,4 +1,4 @@
-import { Outlet, Link, useNavigate } from 'react-router-dom';
+import { Outlet, Link, useNavigate, Navigate } from 'react-router-dom';
 import { UserProfile } from '../types';
 import { auth } from '../firebase';
 import { signOut } from 'firebase/auth';
@@ -16,7 +16,7 @@ export default function Layout({ user }: LayoutProps) {
     navigate('/');
   };
 
-  if (!user) return <Navigate to="/" />;
+  if (!user) return <Navigate to="/" replace />;
 
   return (
     <div className="min-h-screen bg-academic-surface font-sans">
@@ -63,13 +63,3 @@ export default function Layout({ user }: LayoutProps) {
     </div>
   );
 }
-
-function Navigate({ to }: { to: string }) {
-  const navigate = useNavigate();
-  useEffect(() => {
-    navigate(to);
-  }, [to, navigate]);
-  return null;
-}
-
-import { useEffect } from 'react';

@@ -299,12 +299,12 @@ export default function TeacherDashboard({ user }: TeacherDashboardProps) {
             >
               Sections
             </button>
-            <button 
+            {/* <button 
               onClick={() => setActiveTab('profile')}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'profile' ? 'bg-academic-primary text-white' : 'text-academic-secondary/60 hover:bg-academic-surface'}`}
             >
               Profile
-            </button>
+            </button> */}
           </div>
 
           {activeTab === 'quizzes' && (

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { UserProfile, UserRole } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -18,6 +18,12 @@ export default function Home({ user }: HomeProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  React.useEffect(() => {
+    if (user) {
+      navigate(`/${user.role}`);
+    }
+  }, [user, navigate]);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -223,11 +229,61 @@ export default function Home({ user }: HomeProps) {
           };
           await setDoc(doc(db, 'users', userCredential.user.uid), newUser);
           await setDoc(doc(db, 'usernames', acc.username), { uid: userCredential.user.uid, email: acc.email });
+
+          // If it's the teacher, seed a quiz and some submissions
+          if (acc.role === 'teacher') {
+            const quizRef = await addDoc(collection(db, 'quizzes'), {
+              title: "Modern History Quiz",
+              description: "A comprehensive quiz on 20th-century history.",
+              duration: 15,
+              teacherId: userCredential.user.uid,
+              quizCode: "HIST101",
+              createdAt: new Date().toISOString(),
+              published: true,
+              settings: {
+                negativeMarking: 0.25,
+                randomize: true,
+                oneAttempt: true,
+                fullscreenRequired: true
+              }
+            });
+
+            // Seed some questions
+            const questions = [
+              { text: "Who was the first President of the USA?", type: 'mcq', options: ["George Washington", "Thomas Jefferson", "Abraham Lincoln", "John Adams"], correctAnswer: "George Washington", points: 5 },
+              { text: "The Berlin Wall fell in 1989.", type: 'tf', options: ["True", "False"], correctAnswer: "True", points: 5 },
+              { text: "Which country was the first to land a human on the moon?", type: 'mcq', options: ["USSR", "USA", "China", "India"], correctAnswer: "USA", points: 5 }
+            ];
+
+            for (const q of questions) {
+              await addDoc(collection(db, 'questions'), { ...q, quizId: quizRef.id });
+            }
+
+            // Seed some submissions for the leaderboard
+            const testStudents = [
+              { name: "Alice Johnson", score: 15 },
+              { name: "Bob Smith", score: 10 },
+              { name: "Charlie Brown", score: 5 }
+            ];
+
+            for (const student of testStudents) {
+              await addDoc(collection(db, 'submissions'), {
+                quizId: quizRef.id,
+                studentId: `test-student-${Math.random().toString(36).substr(2, 9)}`,
+                studentName: student.name,
+                score: student.score,
+                status: 'submitted',
+                submitTime: new Date().toISOString(),
+                graded: true,
+                answers: {}
+              });
+            }
+          }
         } catch (e: any) {
           console.error(`Failed to seed ${acc.email}:`, e);
         }
       }
-      setSuccess('Test accounts ready! Use student@test.com / password123 to login.');
+      setSuccess('Test accounts and data ready! Use student@test.com / password123 to login.');
     } catch (err: any) {
       setError('Seeding failed: ' + err.message);
     } finally {
@@ -236,7 +292,6 @@ export default function Home({ user }: HomeProps) {
   };
 
   if (user) {
-    navigate(`/${user.role}`);
     return null;
   }
 

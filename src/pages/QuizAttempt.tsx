@@ -40,19 +40,24 @@ export default function QuizAttempt({ user }: QuizAttemptProps) {
   useEffect(() => {
     const fetchData = async () => {
       if (!quizId) return;
-      const quizDoc = await getDoc(doc(db, 'quizzes', quizId));
-      if (!quizDoc.exists()) {
-        navigate('/student');
-        return;
-      }
-      const quizData = { id: quizDoc.id, ...quizDoc.data() } as Quiz;
-      setQuiz(quizData);
+      try {
+        const quizDoc = await getDoc(doc(db, 'quizzes', quizId));
+        if (!quizDoc.exists()) {
+          navigate('/student');
+          return;
+        }
+        const quizData = { id: quizDoc.id, ...quizDoc.data() } as Quiz;
+        setQuiz(quizData);
 
-      const qSnapshot = await getDocs(collection(db, 'quizzes', quizId, 'questions'));
-      const qList = qSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Question));
-      setQuestions(quizData.settings.randomize ? qList.sort(() => Math.random() - 0.5) : qList);
-      
-      setLoading(false);
+        const qSnapshot = await getDocs(collection(db, 'quizzes', quizId, 'questions'));
+        const qList = qSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Question));
+        setQuestions(quizData.settings.randomize ? qList.sort(() => Math.random() - 0.5) : qList);
+      } catch (error) {
+        console.error("Error fetching quiz data in QuizAttempt:", error);
+        navigate('/student');
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();
