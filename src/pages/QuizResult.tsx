@@ -50,8 +50,11 @@ export default function QuizResult({ user }: QuizResultProps) {
   if (!submission || !quiz) return <div className="flex h-screen items-center justify-center">Result not found.</div>;
 
   const totalPoints = questions.reduce((acc, q) => acc + q.points, 0);
-  const score = submission.score ?? 0;
-  const percentage = totalPoints > 0 ? (score / totalPoints) * 100 : 0;
+  const percentage = ((submission.score || 0) / totalPoints) * 100;
+
+  const correctCount = questions.filter(q => submission.answers[q.id] === q.correctAnswer).length;
+  const unansweredCount = questions.filter(q => !submission.answers[q.id]).length;
+  const incorrectCount = questions.length - correctCount - unansweredCount;
 
   return (
     <div className="min-h-screen bg-academic-surface p-6 font-sans">
@@ -76,18 +79,26 @@ export default function QuizResult({ user }: QuizResultProps) {
             <h1 className="text-4xl font-bold mb-2">Quiz Completed!</h1>
             <p className="text-white/60 italic">{quiz.title}</p>
             
-            <div className="mt-10 grid grid-cols-3 gap-8 max-w-2xl mx-auto">
-              <div className="bg-white/5 rounded-3xl p-6 backdrop-blur-sm border border-white/10">
+            <div className="mt-10 grid grid-cols-2 md:grid-cols-5 gap-4 max-w-3xl mx-auto">
+              <div className="bg-white/5 rounded-3xl p-4 backdrop-blur-sm border border-white/10">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">Score</p>
-                <p className="text-3xl font-bold">{submission.score} / {totalPoints}</p>
+                <p className="text-2xl font-bold">{submission.score || 0} / {totalPoints}</p>
               </div>
-              <div className="bg-white/5 rounded-3xl p-6 backdrop-blur-sm border border-white/10">
+              <div className="bg-white/5 rounded-3xl p-4 backdrop-blur-sm border border-white/10">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">Percentage</p>
-                <p className="text-3xl font-bold">{percentage.toFixed(1)}%</p>
+                <p className="text-2xl font-bold">{percentage.toFixed(1)}%</p>
               </div>
-              <div className="bg-white/5 rounded-3xl p-6 backdrop-blur-sm border border-white/10">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1">Status</p>
-                <p className="text-3xl font-bold capitalize">{submission.status}</p>
+              <div className="bg-white/5 rounded-3xl p-4 backdrop-blur-sm border border-white/10">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1 text-green-400">Correct</p>
+                <p className="text-2xl font-bold text-green-400">{correctCount}</p>
+              </div>
+              <div className="bg-white/5 rounded-3xl p-4 backdrop-blur-sm border border-white/10">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1 text-red-400">Incorrect</p>
+                <p className="text-2xl font-bold text-red-400">{incorrectCount}</p>
+              </div>
+              <div className="bg-white/5 rounded-3xl p-4 backdrop-blur-sm border border-white/10 col-span-2 md:col-span-1">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-1 text-yellow-400">Unanswered</p>
+                <p className="text-2xl font-bold text-yellow-400">{unansweredCount}</p>
               </div>
             </div>
           </div>

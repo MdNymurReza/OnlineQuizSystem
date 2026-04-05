@@ -170,6 +170,18 @@ export default function TeacherDashboard({ user }: TeacherDashboardProps) {
     }
   };
 
+  const toLocalISO = (isoStr: string | undefined) => {
+    if (!isoStr) return '';
+    try {
+      const date = new Date(isoStr);
+      if (isNaN(date.getTime())) return '';
+      const offset = date.getTimezoneOffset() * 60000;
+      return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+    } catch (e) {
+      return '';
+    }
+  };
+
   const handleCreateSection = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingSection?.name) return;
@@ -299,12 +311,12 @@ export default function TeacherDashboard({ user }: TeacherDashboardProps) {
             >
               Sections
             </button>
-            {/* <button 
+            <button 
               onClick={() => setActiveTab('profile')}
               className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'profile' ? 'bg-academic-primary text-white' : 'text-academic-secondary/60 hover:bg-academic-surface'}`}
             >
               Profile
-            </button> */}
+            </button>
           </div>
 
           {activeTab === 'quizzes' && (
@@ -950,7 +962,7 @@ export default function TeacherDashboard({ user }: TeacherDashboardProps) {
                     <input 
                       type="datetime-local" 
                       required
-                      value={editingQuiz?.startTime?.slice(0, 16) || ''}
+                      value={toLocalISO(editingQuiz?.startTime)}
                       onChange={(e) => setEditingQuiz({ ...editingQuiz, startTime: new Date(e.target.value).toISOString() })}
                       className="w-full px-4 py-3 rounded-2xl border border-academic-border focus:outline-none focus:border-academic-accent transition-all bg-academic-surface"
                     />
@@ -960,7 +972,7 @@ export default function TeacherDashboard({ user }: TeacherDashboardProps) {
                     <input 
                       type="datetime-local" 
                       required
-                      value={editingQuiz?.endTime?.slice(0, 16) || ''}
+                      value={toLocalISO(editingQuiz?.endTime)}
                       onChange={(e) => setEditingQuiz({ ...editingQuiz, endTime: new Date(e.target.value).toISOString() })}
                       className="w-full px-4 py-3 rounded-2xl border border-academic-border focus:outline-none focus:border-academic-accent transition-all bg-academic-surface"
                     />
