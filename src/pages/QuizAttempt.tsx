@@ -122,23 +122,23 @@ export default function QuizAttempt({ user }: QuizAttemptProps) {
 
   if (!started) {
     return (
-      <div className="min-h-screen bg-[#f5f5f0] flex items-center justify-center p-6">
+      <div className="min-h-screen bg-academic-surface flex items-center justify-center p-6">
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="max-w-2xl w-full bg-white rounded-[32px] p-10 shadow-xl border border-[#5A5A40]/10"
+          className="max-w-2xl w-full academic-card p-10"
         >
-          <h2 className="text-3xl font-bold text-[#5A5A40] mb-4">{quiz?.title}</h2>
-          <p className="text-[#5A5A40]/60 mb-8 italic">{quiz?.description}</p>
+          <h2 className="text-3xl font-bold text-academic-primary mb-4">{quiz?.title}</h2>
+          <p className="text-academic-secondary/60 mb-8 italic">{quiz?.description}</p>
           
           <div className="grid grid-cols-2 gap-6 mb-10">
-            <div className="p-4 bg-[#5A5A40]/5 rounded-2xl">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/40">Duration</span>
-              <p className="text-xl font-bold text-[#5A5A40]">{quiz?.duration} Minutes</p>
+            <div className="p-4 bg-academic-surface rounded-2xl border border-academic-border">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/40">Duration</span>
+              <p className="text-xl font-bold text-academic-primary">{quiz?.duration} Minutes</p>
             </div>
-            <div className="p-4 bg-[#5A5A40]/5 rounded-2xl">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/40">Questions</span>
-              <p className="text-xl font-bold text-[#5A5A40]">{questions.length}</p>
+            <div className="p-4 bg-academic-surface rounded-2xl border border-academic-border">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/40">Questions</span>
+              <p className="text-xl font-bold text-academic-primary">{questions.length}</p>
             </div>
           </div>
 
@@ -157,7 +157,7 @@ export default function QuizAttempt({ user }: QuizAttemptProps) {
 
           <button 
             onClick={startQuiz}
-            className="w-full bg-[#5A5A40] text-white py-4 rounded-full font-medium hover:bg-[#5A5A40]/90 transition-colors flex items-center justify-center gap-2"
+            className="academic-button-primary w-full flex items-center justify-center gap-2"
           >
             <Maximize size={20} />
             Enter Fullscreen & Start Quiz
@@ -175,21 +175,21 @@ export default function QuizAttempt({ user }: QuizAttemptProps) {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f5f0] font-serif p-6">
+    <div className="min-h-screen bg-academic-surface font-sans p-6">
       <div className="max-w-4xl mx-auto">
-        <header className="flex justify-between items-center mb-8 bg-white p-6 rounded-[32px] border border-[#5A5A40]/10 shadow-sm">
+        <header className="flex justify-between items-center mb-8 bg-white p-6 rounded-[32px] border border-academic-border shadow-sm">
           <div className="flex items-center gap-4">
-            <div className="h-10 w-10 bg-[#5A5A40] rounded-full flex items-center justify-center text-white font-bold">
+            <div className="h-10 w-10 bg-academic-primary rounded-full flex items-center justify-center text-white font-bold">
               {currentIdx + 1}
             </div>
             <div>
-              <h3 className="font-bold text-[#5A5A40]">{quiz?.title}</h3>
-              <p className="text-xs text-[#5A5A40]/40 uppercase tracking-widest">Question {currentIdx + 1} of {questions.length}</p>
+              <h3 className="font-bold text-academic-primary">{quiz?.title}</h3>
+              <p className="text-xs text-academic-secondary/40 uppercase tracking-widest">Question {currentIdx + 1} of {questions.length}</p>
             </div>
           </div>
 
           <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2 text-[#5A5A40]">
+            <div className="flex items-center gap-2 text-academic-primary">
               <Clock size={20} />
               <span className={`text-xl font-bold font-mono ${timeLeft && timeLeft < 60 ? 'text-red-500 animate-pulse' : ''}`}>
                 {timeLeft !== null ? formatTime(timeLeft) : '--:--'}
@@ -202,9 +202,9 @@ export default function QuizAttempt({ user }: QuizAttemptProps) {
           </div>
         </header>
 
-        <main className="bg-white rounded-[32px] p-10 border border-[#5A5A40]/10 shadow-sm min-h-[400px] flex flex-col">
+        <main className="academic-card p-10 min-h-[400px] flex flex-col">
           <div className="mb-10">
-            <h2 className="text-2xl font-bold text-[#5A5A40] leading-relaxed">{currentQ.text}</h2>
+            <h2 className="text-2xl font-bold text-academic-primary leading-relaxed">{currentQ.text}</h2>
           </div>
 
           <div className="space-y-4 flex-grow">
@@ -215,12 +215,12 @@ export default function QuizAttempt({ user }: QuizAttemptProps) {
                   onClick={() => setAnswers({ ...answers, [currentQ.id]: opt })}
                   className={`w-full text-left px-6 py-4 rounded-2xl border transition-all flex items-center gap-4 ${
                     answers[currentQ.id] === opt 
-                      ? 'bg-[#5A5A40] text-white border-[#5A5A40]' 
-                      : 'bg-white text-[#5A5A40] border-[#5A5A40]/10 hover:bg-[#5A5A40]/5'
+                      ? 'bg-academic-primary text-white border-academic-primary' 
+                      : 'bg-white text-academic-primary border-academic-border hover:bg-academic-surface'
                   }`}
                 >
                   <div className={`h-6 w-6 rounded-full border flex items-center justify-center text-xs font-bold ${
-                    answers[currentQ.id] === opt ? 'border-white' : 'border-[#5A5A40]/20'
+                    answers[currentQ.id] === opt ? 'border-white' : 'border-academic-border'
                   }`}>
                     {String.fromCharCode(65 + i)}
                   </div>
@@ -231,17 +231,17 @@ export default function QuizAttempt({ user }: QuizAttemptProps) {
               <textarea 
                 value={answers[currentQ.id] || ''}
                 onChange={(e) => setAnswers({ ...answers, [currentQ.id]: e.target.value })}
-                className="w-full px-6 py-4 rounded-2xl border border-[#5A5A40]/10 focus:outline-none focus:border-[#5A5A40] transition-all h-32 resize-none"
+                className="w-full px-6 py-4 rounded-2xl border border-academic-border focus:outline-none focus:border-academic-accent transition-all h-32 resize-none bg-academic-surface"
                 placeholder="Type your answer here..."
               />
             )}
           </div>
 
-          <div className="mt-12 pt-8 border-t border-[#5A5A40]/5 flex justify-between items-center">
+          <div className="mt-12 pt-8 border-t border-academic-border flex justify-between items-center">
             <button 
               disabled={currentIdx === 0}
               onClick={() => setCurrentIdx(prev => prev - 1)}
-              className="px-6 py-3 rounded-full border border-[#5A5A40]/20 text-[#5A5A40] font-medium hover:bg-[#5A5A40]/5 transition-colors flex items-center gap-2 disabled:opacity-30"
+              className="px-6 py-3 rounded-full border border-academic-border text-academic-secondary/60 font-medium hover:bg-academic-surface transition-colors flex items-center gap-2 disabled:opacity-30"
             >
               <ChevronLeft size={18} />
               Previous
@@ -250,7 +250,7 @@ export default function QuizAttempt({ user }: QuizAttemptProps) {
             {currentIdx === questions.length - 1 ? (
               <button 
                 onClick={() => handleSubmit()}
-                className="px-10 py-3 bg-[#5A5A40] text-white rounded-full font-medium hover:bg-[#5A5A40]/90 transition-colors flex items-center gap-2"
+                className="academic-button-primary flex items-center gap-2"
               >
                 <Send size={18} />
                 Submit Quiz
@@ -258,7 +258,7 @@ export default function QuizAttempt({ user }: QuizAttemptProps) {
             ) : (
               <button 
                 onClick={() => setCurrentIdx(prev => prev + 1)}
-                className="px-8 py-3 bg-[#5A5A40] text-white rounded-full font-medium hover:bg-[#5A5A40]/90 transition-colors flex items-center gap-2"
+                className="academic-button-primary flex items-center gap-2"
               >
                 Next
                 <ChevronRight size={18} />
@@ -273,9 +273,9 @@ export default function QuizAttempt({ user }: QuizAttemptProps) {
               key={i}
               onClick={() => setCurrentIdx(i)}
               className={`h-10 rounded-xl border font-bold text-xs transition-all ${
-                currentIdx === i ? 'bg-[#5A5A40] text-white border-[#5A5A40]' :
-                answers[questions[i].id] ? 'bg-[#5A5A40]/10 text-[#5A5A40] border-[#5A5A40]/20' :
-                'bg-white text-[#5A5A40]/40 border-[#5A5A40]/10'
+                currentIdx === i ? 'bg-academic-primary text-white border-academic-primary' :
+                answers[questions[i].id] ? 'bg-academic-accent/10 text-academic-accent border-academic-accent/20' :
+                'bg-white text-academic-secondary/40 border-academic-border'
               }`}
             >
               {i + 1}

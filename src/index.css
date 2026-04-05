@@ -1,1 +1,51 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  
+  --color-academic-primary: #0F172A;
+  --color-academic-secondary: #1E293B;
+  --color-academic-accent: #2563EB;
+  --color-academic-surface: #F8FAFC;
+  --color-academic-border: #E2E8F0;
+}
+
+@layer base {
+  body {
+    @apply bg-academic-surface text-academic-primary font-sans antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight;
+  }
+}
+
+.academic-card {
+  @apply bg-white border border-academic-border rounded-3xl shadow-sm hover:shadow-md transition-all duration-300;
+}
+
+.academic-button-primary {
+  @apply px-8 py-3 bg-academic-accent text-white rounded-full font-semibold hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-500/20;
+}
+
+.academic-button-outline {
+  @apply px-8 py-3 bg-white text-academic-primary border border-academic-border rounded-full font-semibold hover:bg-academic-surface transition-all active:scale-95;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-academic-border rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply bg-academic-secondary/20;
+}

@@ -25,6 +25,7 @@ export default function StudentDashboard({ user }: StudentDashboardProps) {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [quizzes, setQuizzes] = useState<Record<string, Quiz>>({});
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [leaderboardSearch, setLeaderboardSearch] = useState('');
   const [activeTab, setActiveTab] = useState<'overview' | 'sections' | 'quizzes' | 'leaderboard' | 'progress' | 'profile'>('overview');
   const [allQuizzes, setAllQuizzes] = useState<Quiz[]>([]);
   const [allSections, setAllSections] = useState<Section[]>([]);
@@ -87,6 +88,37 @@ export default function StudentDashboard({ user }: StudentDashboardProps) {
     }
   }, [allSections, user.uid]);
 
+  const fetchLeaderboard = async () => {
+    try {
+      // This is a simplified leaderboard. In a real app, we'd have a pre-calculated leaderboard collection.
+      const q = query(collection(db, 'submissions'), where('status', '==', 'submitted'), limit(200));
+      const snapshot = await getDocs(q);
+      const allSubs = snapshot.docs.map(doc => doc.data() as Submission);
+      
+      if (allSubs.length === 0) {
+        console.log("No submitted quizzes found for leaderboard tab.");
+      }
+      
+      const studentStats: Record<string, { score: number, count: number, name: string }> = {};
+      allSubs.forEach(s => {
+        if (!studentStats[s.studentId]) studentStats[s.studentId] = { score: 0, count: 0, name: s.studentName };
+        studentStats[s.studentId].score += s.score || 0;
+        studentStats[s.studentId].count++;
+      });
+
+      const entries: LeaderboardEntry[] = Object.entries(studentStats).map(([id, stats]) => ({
+        studentId: id,
+        studentName: stats.name || `Student ${id.substring(0, 5)}`,
+        totalScore: stats.score / stats.count,
+        quizzesTaken: stats.count
+      })).sort((a, b) => b.totalScore - a.totalScore);
+
+      setLeaderboard(entries);
+    } catch (err) {
+      console.error("Error fetching leaderboard in StudentDashboard tab:", err);
+    }
+  };
+
   useEffect(() => {
     const fetchSubmissions = async () => {
       const q = query(collection(db, 'submissions'), where('studentId', '==', user.uid));
@@ -105,29 +137,6 @@ export default function StudentDashboard({ user }: StudentDashboardProps) {
         }
       }
       setQuizzes(quizDetails);
-    };
-
-    const fetchLeaderboard = async () => {
-      // This is a simplified leaderboard. In a real app, we'd have a pre-calculated leaderboard collection.
-      const q = query(collection(db, 'submissions'), where('status', '==', 'submitted'), limit(100));
-      const snapshot = await getDocs(q);
-      const allSubs = snapshot.docs.map(doc => doc.data() as Submission);
-      
-      const studentStats: Record<string, { score: number, count: number, name: string }> = {};
-      allSubs.forEach(s => {
-        if (!studentStats[s.studentId]) studentStats[s.studentId] = { score: 0, count: 0, name: s.studentName };
-        studentStats[s.studentId].score += s.score || 0;
-        studentStats[s.studentId].count++;
-      });
-
-      const entries: LeaderboardEntry[] = Object.entries(studentStats).map(([id, stats]) => ({
-        studentId: id,
-        studentName: stats.name || `Student ${id.substring(0, 5)}`,
-        totalScore: stats.score / stats.count,
-        quizzesTaken: stats.count
-      })).sort((a, b) => b.totalScore - a.totalScore).slice(0, 10);
-
-      setLeaderboard(entries);
     };
 
     fetchSubmissions();
@@ -217,33 +226,34 @@ export default function StudentDashboard({ user }: StudentDashboardProps) {
     }
   };
 
-  const avgScore = submissions.length > 0 
-    ? submissions.reduce((acc, s) => acc + (s.score || 0), 0) / submissions.length 
+  const completedSubmissions = submissions.filter(s => s.status !== 'ongoing');
+  const avgScore = completedSubmissions.length > 0 
+    ? completedSubmissions.reduce((acc, s) => acc + (s.score || 0), 0) / completedSubmissions.length 
     : 0;
 
   return (
     <div className="space-y-10">
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
-          <h2 className="text-3xl font-bold text-[#5A5A40] tracking-tight">Student Dashboard</h2>
-          <p className="text-[#5A5A40]/60 italic">Welcome back, {user.name}</p>
+          <h2 className="text-3xl font-bold text-academic-primary tracking-tight font-display">Student Dashboard</h2>
+          <p className="text-academic-secondary/60 italic">Welcome back, {user.name}</p>
         </div>
 
         <div className="flex w-full md:w-auto gap-3">
           <div className="relative flex-1 md:w-64">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5A5A40]/40" size={18} />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-academic-primary/40" size={18} />
             <input 
               type="text" 
               placeholder="Enter Quiz Code" 
               value={quizCode}
               onChange={(e) => setQuizCode(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 rounded-full border border-[#5A5A40]/20 bg-white focus:outline-none focus:border-[#5A5A40] transition-all"
+              className="w-full pl-12 pr-4 py-3 rounded-full border border-academic-border bg-white focus:outline-none focus:border-academic-accent focus:ring-4 focus:ring-academic-accent/5 transition-all"
             />
           </div>
           <button 
             onClick={handleJoinQuiz}
             disabled={loading}
-            className="px-8 py-3 bg-[#5A5A40] text-white rounded-full font-medium hover:bg-[#5A5A40]/90 transition-colors flex items-center gap-2 disabled:opacity-50"
+            className="academic-button-primary flex items-center gap-2 disabled:opacity-50"
           >
             {loading ? 'Joining...' : (
               <>
@@ -255,40 +265,40 @@ export default function StudentDashboard({ user }: StudentDashboardProps) {
         </div>
       </header>
 
-      <div className="flex gap-2 bg-white p-1 rounded-full border border-[#5A5A40]/10 w-fit">
+      <div className="flex gap-2 bg-white p-1 rounded-full border border-academic-border w-fit overflow-x-auto max-w-full">
         <button 
           onClick={() => setActiveTab('overview')}
-          className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'overview' ? 'bg-[#5A5A40] text-white' : 'text-[#5A5A40]/60 hover:bg-[#5A5A40]/5'}`}
+          className={`px-6 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'overview' ? 'bg-academic-primary text-white shadow-lg shadow-academic-primary/20' : 'text-academic-secondary hover:bg-academic-surface'}`}
         >
           Overview
         </button>
         <button 
           onClick={() => setActiveTab('sections')}
-          className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'sections' ? 'bg-[#5A5A40] text-white' : 'text-[#5A5A40]/60 hover:bg-[#5A5A40]/5'}`}
+          className={`px-6 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'sections' ? 'bg-academic-primary text-white shadow-lg shadow-academic-primary/20' : 'text-academic-secondary hover:bg-academic-surface'}`}
         >
           Sections
         </button>
         <button 
           onClick={() => setActiveTab('quizzes')}
-          className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'quizzes' ? 'bg-[#5A5A40] text-white' : 'text-[#5A5A40]/60 hover:bg-[#5A5A40]/5'}`}
+          className={`px-6 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'quizzes' ? 'bg-academic-primary text-white shadow-lg shadow-academic-primary/20' : 'text-academic-secondary hover:bg-academic-surface'}`}
         >
           Quizzes
         </button>
         <button 
           onClick={() => setActiveTab('leaderboard')}
-          className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'leaderboard' ? 'bg-[#5A5A40] text-white' : 'text-[#5A5A40]/60 hover:bg-[#5A5A40]/5'}`}
+          className={`px-6 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'leaderboard' ? 'bg-academic-primary text-white shadow-lg shadow-academic-primary/20' : 'text-academic-secondary hover:bg-academic-surface'}`}
         >
           Leaderboard
         </button>
         <button 
           onClick={() => setActiveTab('progress')}
-          className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'progress' ? 'bg-[#5A5A40] text-white' : 'text-[#5A5A40]/60 hover:bg-[#5A5A40]/5'}`}
+          className={`px-6 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'progress' ? 'bg-academic-primary text-white shadow-lg shadow-academic-primary/20' : 'text-academic-secondary hover:bg-academic-surface'}`}
         >
           Progress
         </button>
         <button 
           onClick={() => setActiveTab('profile')}
-          className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${activeTab === 'profile' ? 'bg-[#5A5A40] text-white' : 'text-[#5A5A40]/60 hover:bg-[#5A5A40]/5'}`}
+          className={`px-6 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${activeTab === 'profile' ? 'bg-academic-primary text-white shadow-lg shadow-academic-primary/20' : 'text-academic-secondary hover:bg-academic-surface'}`}
         >
           Profile
         </button>
@@ -297,42 +307,42 @@ export default function StudentDashboard({ user }: StudentDashboardProps) {
       {activeTab === 'overview' && (
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white p-8 rounded-[32px] border border-[#5A5A40]/10 shadow-sm">
-              <BarChart3 className="text-[#5A5A40]/40 mb-4" size={24} />
-              <p className="text-3xl font-bold text-[#5A5A40]">{submissions.length}</p>
-              <p className="text-sm text-[#5A5A40]/60 italic">Quizzes Attempted</p>
+            <div className="academic-card p-8">
+              <BarChart3 className="text-academic-accent mb-4" size={24} />
+              <p className="text-3xl font-bold text-academic-primary font-display">{completedSubmissions.length}</p>
+              <p className="text-sm text-academic-secondary/60 italic">Quizzes Attempted</p>
             </div>
-            <div className="bg-white p-8 rounded-[32px] border border-[#5A5A40]/10 shadow-sm">
-              <TrendingUp className="text-green-400 mb-4" size={24} />
-              <p className="text-3xl font-bold text-[#5A5A40]">{avgScore.toFixed(1)}%</p>
-              <p className="text-sm text-[#5A5A40]/60 italic">Average Score</p>
+            <div className="academic-card p-8">
+              <TrendingUp className="text-green-500 mb-4" size={24} />
+              <p className="text-3xl font-bold text-academic-primary font-display">{avgScore.toFixed(1)}%</p>
+              <p className="text-sm text-academic-secondary/60 italic">Average Score</p>
             </div>
-            <div className="bg-white p-8 rounded-[32px] border border-[#5A5A40]/10 shadow-sm">
-              <Trophy className="text-yellow-400 mb-4" size={24} />
-              <p className="text-3xl font-bold text-[#5A5A40]">
-                {submissions.filter(s => (s.score || 0) >= 80).length}
+            <div className="academic-card p-8">
+              <Trophy className="text-amber-500 mb-4" size={24} />
+              <p className="text-3xl font-bold text-academic-primary font-display">
+                {completedSubmissions.filter(s => (s.score || 0) >= 80).length}
               </p>
-              <p className="text-sm text-[#5A5A40]/60 italic">High Scores (80%+)</p>
+              <p className="text-sm text-academic-secondary/60 italic">High Scores (80%+)</p>
             </div>
           </div>
 
           {announcements.length > 0 && (
-            <section className="bg-[#5A5A40]/5 p-8 rounded-[40px] border border-[#5A5A40]/10">
-              <h3 className="text-xl font-bold text-[#5A5A40] mb-6 flex items-center gap-2">
-                <Bell size={20} className="text-[#5A5A40]/40" />
+            <section className="bg-academic-surface p-8 rounded-[40px] border border-academic-border">
+              <h3 className="text-xl font-bold text-academic-primary mb-6 flex items-center gap-2 font-display">
+                <Bell size={20} className="text-academic-accent" />
                 Recent Announcements
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {announcements.map((announce) => (
-                  <div key={announce.id} className={`p-6 rounded-3xl border bg-white ${announce.type === 'exam' ? 'border-red-200' : 'border-[#5A5A40]/10'}`}>
+                  <div key={announce.id} className={`p-6 rounded-3xl border bg-white shadow-sm ${announce.type === 'exam' ? 'border-red-200' : 'border-academic-border'}`}>
                     <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-bold text-[#5A5A40]">{announce.title}</h4>
-                      <span className={`px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-widest ${announce.type === 'exam' ? 'bg-red-100 text-red-700' : 'bg-[#5A5A40]/10 text-[#5A5A40]'}`}>
+                      <h4 className="font-bold text-academic-primary">{announce.title}</h4>
+                      <span className={`px-2 py-0.5 rounded-full text-[8px] font-bold uppercase tracking-widest ${announce.type === 'exam' ? 'bg-red-100 text-red-700' : 'bg-academic-surface text-academic-accent'}`}>
                         {announce.type}
                       </span>
                     </div>
-                    <p className="text-sm text-[#5A5A40]/70 line-clamp-2 mb-4">{announce.content}</p>
-                    <p className="text-[10px] text-[#5A5A40]/40 font-bold uppercase tracking-widest">
+                    <p className="text-sm text-academic-secondary/70 line-clamp-2 mb-4">{announce.content}</p>
+                    <p className="text-[10px] text-academic-secondary/40 font-bold uppercase tracking-widest">
                       {new Date(announce.createdAt).toLocaleDateString()}
                     </p>
                   </div>
@@ -353,27 +363,29 @@ export default function StudentDashboard({ user }: StudentDashboardProps) {
           )}
 
           <section>
-            <h3 className="text-xl font-bold text-[#5A5A40] mb-6 flex items-center gap-2">
-              <CheckCircle size={20} className="text-[#5A5A40]/40" />
+            <h3 className="text-xl font-bold text-academic-primary mb-6 flex items-center gap-2 font-display">
+              <CheckCircle size={20} className="text-academic-accent" />
               Your Recent Submissions
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {submissions.length === 0 ? (
-                <div className="col-span-full bg-white/50 border border-dashed border-[#5A5A40]/20 rounded-[32px] py-20 text-center">
-                  <p className="text-[#5A5A40]/40 italic">No quizzes attempted yet.</p>
+              {submissions.filter(s => s.status !== 'ongoing').length === 0 ? (
+                <div className="col-span-full bg-academic-surface/50 border border-dashed border-academic-border rounded-[32px] py-20 text-center">
+                  <p className="text-academic-secondary/40 italic">No quizzes attempted yet.</p>
                 </div>
               ) : (
-                submissions.map((sub) => {
+                submissions
+                  .filter(s => s.status !== 'ongoing')
+                  .map((sub) => {
                   const quiz = quizzes[sub.quizId];
                   return (
                     <motion.div 
                       key={sub.id}
                       whileHover={{ y: -5 }}
-                      className="bg-white rounded-[32px] p-6 border border-[#5A5A40]/10 shadow-sm"
+                      className="academic-card p-6"
                     >
                       <div className="flex justify-between items-start mb-4">
-                        <h4 className="text-lg font-bold text-[#5A5A40]">{quiz?.title || 'Loading...'}</h4>
+                        <h4 className="text-lg font-bold text-academic-primary">{quiz?.title || 'Loading...'}</h4>
                         <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${
                           sub.status === 'submitted' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                         }`}>
@@ -382,19 +394,19 @@ export default function StudentDashboard({ user }: StudentDashboardProps) {
                       </div>
                       
                       <div className="space-y-3 mb-6">
-                        <div className="flex items-center gap-2 text-sm text-[#5A5A40]/60">
+                        <div className="flex items-center gap-2 text-sm text-academic-secondary/60">
                           <Clock size={14} />
                           <span>Submitted: {new Date(sub.submitTime || '').toLocaleDateString()}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-[#5A5A40]/60">
+                        <div className="flex items-center gap-2 text-sm text-academic-secondary/60">
                           <AlertCircle size={14} />
                           <span>Violations: {sub.violations.length}</span>
                         </div>
                       </div>
 
-                      <div className="pt-4 border-t border-[#5A5A40]/5 flex justify-between items-center">
-                        <span className="text-sm font-medium text-[#5A5A40]/40 uppercase tracking-widest">Score</span>
-                        <span className="text-2xl font-bold text-[#5A5A40]">
+                      <div className="pt-4 border-t border-academic-border flex justify-between items-center">
+                        <span className="text-sm font-medium text-academic-secondary/40 uppercase tracking-widest">Score</span>
+                        <span className="text-2xl font-bold text-academic-primary font-display">
                           {sub.graded ? `${sub.score?.toFixed(1)}%` : 'Pending'}
                         </span>
                       </div>
@@ -415,18 +427,18 @@ export default function StudentDashboard({ user }: StudentDashboardProps) {
               <motion.div 
                 key={section.id}
                 whileHover={{ y: -5 }}
-                className="bg-white rounded-[32px] p-6 border border-[#5A5A40]/10 shadow-sm flex flex-col"
+                className="academic-card p-6 flex flex-col"
               >
                 <div className="flex justify-between items-start mb-4">
-                  <h4 className="text-lg font-bold text-[#5A5A40]">{section.name}</h4>
+                  <h4 className="text-lg font-bold text-academic-primary">{section.name}</h4>
                   {isEnrolled ? (
                     <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">Enrolled</span>
                   ) : (
-                    <span className="bg-[#5A5A40]/5 text-[#5A5A40]/40 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">Available</span>
+                    <span className="bg-academic-surface text-academic-accent px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">Available</span>
                   )}
                 </div>
-                <p className="text-sm text-[#5A5A40]/60 italic mb-6 line-clamp-2">{section.description}</p>
-                <div className="flex items-center gap-2 text-xs text-[#5A5A40]/40 font-bold uppercase tracking-widest mb-6">
+                <p className="text-sm text-academic-secondary/60 italic mb-6 line-clamp-2">{section.description}</p>
+                <div className="flex items-center gap-2 text-xs text-academic-secondary/40 font-bold uppercase tracking-widest mb-6">
                   <User size={14} />
                   <span>Teacher: {section.teacherName}</span>
                 </div>
@@ -434,14 +446,14 @@ export default function StudentDashboard({ user }: StudentDashboardProps) {
                 {!isEnrolled && (
                   <button 
                     onClick={() => { setSelectedSection(section); setShowEnrollModal(true); }}
-                    className="mt-auto w-full py-3 bg-[#5A5A40] text-white rounded-full font-medium hover:bg-[#5A5A40]/90 transition-colors flex items-center justify-center gap-2"
+                    className="mt-auto academic-button-primary flex items-center justify-center gap-2"
                   >
                     <Plus size={18} />
                     Enroll Now
                   </button>
                 )}
                 {isEnrolled && (
-                  <div className="mt-auto flex items-center justify-center gap-2 text-[#5A5A40]/40 font-medium text-sm">
+                  <div className="mt-auto flex items-center justify-center gap-2 text-academic-secondary/40 font-medium text-sm py-3 bg-academic-surface rounded-full">
                     <CheckCircle size={18} className="text-green-500" />
                     You are a member
                   </div>
@@ -454,125 +466,158 @@ export default function StudentDashboard({ user }: StudentDashboardProps) {
 
       {activeTab === 'quizzes' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {allQuizzes.length === 0 ? (
-            <div className="col-span-full bg-white/50 border border-dashed border-[#5A5A40]/20 rounded-[32px] py-20 text-center">
-              <p className="text-[#5A5A40]/40 italic">No quizzes available at the moment.</p>
+          {allQuizzes.filter(quiz => !submissions.some(s => s.quizId === quiz.id)).length === 0 ? (
+            <div className="col-span-full bg-academic-surface/50 border border-dashed border-academic-border rounded-[32px] py-20 text-center">
+              <p className="text-academic-secondary/40 italic">No new quizzes available at the moment.</p>
             </div>
           ) : (
-            allQuizzes.map((quiz) => {
-              const isAttempted = submissions.some(s => s.quizId === quiz.id);
-              const isRestricted = quiz.sectionId && !myEnrollments[quiz.sectionId];
-              const now = new Date();
-              const isExpired = new Date(quiz.endTime) < now;
-              const isUpcoming = new Date(quiz.startTime) > now;
+            allQuizzes
+              .filter(quiz => !submissions.some(s => s.quizId === quiz.id))
+              .map((quiz) => {
+                const isRestricted = quiz.sectionId && !myEnrollments[quiz.sectionId];
+                const now = new Date();
+                const isExpired = new Date(quiz.endTime) < now;
+                const isUpcoming = new Date(quiz.startTime) > now;
 
-              return (
-                <motion.div 
-                  key={quiz.id}
-                  whileHover={{ y: -5 }}
-                  className={`bg-white rounded-[32px] p-6 border border-[#5A5A40]/10 shadow-sm flex flex-col ${isRestricted ? 'opacity-60 grayscale' : ''}`}
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <h4 className="text-lg font-bold text-[#5A5A40]">{quiz.title}</h4>
-                    {isAttempted ? (
-                      <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">Attempted</span>
-                    ) : isUpcoming ? (
-                      <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">Upcoming</span>
-                    ) : isExpired ? (
-                      <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">Expired</span>
+                return (
+                  <motion.div 
+                    key={quiz.id}
+                    whileHover={{ y: -5 }}
+                    className={`academic-card p-6 flex flex-col ${isRestricted ? 'opacity-60 grayscale' : ''}`}
+                  >
+                    <div className="flex justify-between items-start mb-4">
+                      <h4 className="text-lg font-bold text-academic-primary">{quiz.title}</h4>
+                      {isUpcoming ? (
+                        <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">Upcoming</span>
+                      ) : isExpired ? (
+                        <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">Expired</span>
+                      ) : (
+                        <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">Live</span>
+                      )}
+                    </div>
+                    
+                    <p className="text-sm text-academic-secondary/60 italic mb-6 line-clamp-2">{quiz.description}</p>
+                    
+                    <div className="space-y-2 mb-6">
+                      <div className="flex items-center gap-2 text-xs text-academic-secondary/40 font-bold uppercase tracking-widest">
+                        <Clock size={14} />
+                        <span>{quiz.duration} Minutes</span>
+                      </div>
+                      {quiz.department && (
+                        <div className="flex items-center gap-2 text-xs text-academic-secondary/40 font-bold uppercase tracking-widest">
+                          <BookOpen size={14} />
+                          <span>{quiz.department}</span>
+                        </div>
+                      )}
+                      {quiz.sectionId && (
+                        <div className="flex items-center gap-2 text-xs text-academic-secondary/40 font-bold uppercase tracking-widest">
+                          <Users size={14} />
+                          <span>Section: {allSections.find(s => s.id === quiz.sectionId)?.name || 'Restricted'}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {isRestricted ? (
+                      <div className="mt-auto p-4 bg-red-50 rounded-2xl border border-red-100 flex items-center gap-2 text-red-600 text-xs font-bold">
+                        <Lock size={14} />
+                        Enroll in section to join
+                      </div>
                     ) : (
-                      <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">Live</span>
+                      <button 
+                        onClick={() => { setQuizCode(quiz.quizCode); handleJoinQuiz(); }}
+                        disabled={isUpcoming || isExpired}
+                        className="mt-auto academic-button-primary flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        <Play size={18} />
+                        {isUpcoming ? 'Starts Soon' : isExpired ? 'Quiz Ended' : 'Start Quiz'}
+                      </button>
                     )}
-                  </div>
-                  
-                  <p className="text-sm text-[#5A5A40]/60 italic mb-6 line-clamp-2">{quiz.description}</p>
-                  
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center gap-2 text-xs text-[#5A5A40]/40 font-bold uppercase tracking-widest">
-                      <Clock size={14} />
-                      <span>{quiz.duration} Minutes</span>
-                    </div>
-                    {quiz.department && (
-                      <div className="flex items-center gap-2 text-xs text-[#5A5A40]/40 font-bold uppercase tracking-widest">
-                        <BookOpen size={14} />
-                        <span>{quiz.department}</span>
-                      </div>
-                    )}
-                    {quiz.sectionId && (
-                      <div className="flex items-center gap-2 text-xs text-[#5A5A40]/40 font-bold uppercase tracking-widest">
-                        <Users size={14} />
-                        <span>Section: {allSections.find(s => s.id === quiz.sectionId)?.name || 'Restricted'}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {isRestricted ? (
-                    <div className="mt-auto p-4 bg-red-50 rounded-2xl border border-red-100 flex items-center gap-2 text-red-600 text-xs font-bold">
-                      <Lock size={14} />
-                      Enroll in section to join
-                    </div>
-                  ) : isAttempted && quiz.settings.oneAttempt ? (
-                    <div className="mt-auto p-4 bg-[#5A5A40]/5 rounded-2xl border border-[#5A5A40]/10 flex items-center gap-2 text-[#5A5A40]/40 text-xs font-bold">
-                      <CheckCircle size={14} />
-                      Already attempted
-                    </div>
-                  ) : (
-                    <button 
-                      onClick={() => { setQuizCode(quiz.quizCode); handleJoinQuiz(); }}
-                      disabled={isUpcoming || isExpired}
-                      className="mt-auto w-full py-3 bg-[#5A5A40] text-white rounded-full font-medium hover:bg-[#5A5A40]/90 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-                    >
-                      <Play size={18} />
-                      {isUpcoming ? 'Starts Soon' : isExpired ? 'Quiz Ended' : 'Start Quiz'}
-                    </button>
-                  )}
-                </motion.div>
-              );
-            })
+                  </motion.div>
+                );
+              })
           )}
         </div>
       )}
       {activeTab === 'leaderboard' && (
-        <div className="bg-white rounded-[32px] border border-[#5A5A40]/10 overflow-hidden shadow-sm">
-          <div className="p-8 border-b border-[#5A5A40]/10">
-            <h3 className="text-xl font-bold text-[#5A5A40] flex items-center gap-2">
-              <Trophy size={20} className="text-yellow-400" />
-              Top Performers
-            </h3>
+        <div className="academic-card overflow-hidden">
+          <div className="p-8 border-b border-academic-border flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+              <h3 className="text-xl font-bold text-academic-primary flex items-center gap-2 font-display">
+                <Trophy size={20} className="text-amber-500" />
+                Overall Performance
+              </h3>
+              <p className="text-sm text-academic-secondary/60 italic">Top performers across all quizzes.</p>
+            </div>
+            <div className="flex items-center gap-4 w-full md:w-auto">
+              <div className="relative flex-grow">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-academic-primary/40" size={18} />
+                <input 
+                  type="text" 
+                  placeholder="Search student..."
+                  value={leaderboardSearch}
+                  onChange={(e) => setLeaderboardSearch(e.target.value)}
+                  className="w-full pl-12 pr-4 py-3 rounded-full border border-academic-border focus:outline-none focus:border-academic-accent focus:ring-4 focus:ring-academic-accent/5 transition-all bg-white"
+                />
+              </div>
+              <button 
+                onClick={() => fetchLeaderboard()}
+                className="p-3 hover:bg-academic-surface rounded-full text-academic-accent transition-colors border border-academic-border bg-white shadow-sm"
+                title="Refresh Leaderboard"
+              >
+                <BarChart3 size={20} />
+              </button>
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-[#5A5A40]/5 border-b border-[#5A5A40]/10">
-                  <th className="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60">Rank</th>
-                  <th className="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60">Student</th>
-                  <th className="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60">Avg. Score</th>
-                  <th className="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60">Quizzes</th>
+                <tr className="bg-academic-surface border-b border-academic-border">
+                  <th className="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-academic-secondary/60">Rank</th>
+                  <th className="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-academic-secondary/60">Student</th>
+                  <th className="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-academic-secondary/60">Avg. Score</th>
+                  <th className="px-8 py-4 text-[10px] font-bold uppercase tracking-widest text-academic-secondary/60">Quizzes</th>
                 </tr>
               </thead>
               <tbody>
-                {leaderboard.map((entry, index) => (
-                  <tr key={entry.studentId} className={`border-b border-[#5A5A40]/5 hover:bg-[#5A5A40]/2 transition-colors ${entry.studentId === user.uid ? 'bg-[#5A5A40]/5' : ''}`}>
+                {leaderboard
+                  .filter(entry => entry.studentName.toLowerCase().includes(leaderboardSearch.toLowerCase()))
+                  .map((entry, index) => (
+                  <tr key={entry.studentId} className={`border-b border-academic-border hover:bg-academic-surface transition-colors ${entry.studentId === user.uid ? 'bg-academic-surface' : ''}`}>
                     <td className="px-8 py-6">
-                      <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold ${
-                        index === 0 ? 'bg-yellow-100 text-yellow-700' :
-                        index === 1 ? 'bg-gray-100 text-gray-700' :
-                        index === 2 ? 'bg-orange-100 text-orange-700' : 'text-[#5A5A40]/40'
+                      <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold font-display ${
+                        index === 0 ? 'bg-amber-100 text-amber-700' :
+                        index === 1 ? 'bg-slate-100 text-slate-700' :
+                        index === 2 ? 'bg-orange-100 text-orange-700' : 'text-academic-secondary/40'
                       }`}>
                         {index + 1}
                       </div>
                     </td>
                     <td className="px-8 py-6">
-                      <p className="font-bold text-[#5A5A40]">{entry.studentId === user.uid ? 'You' : entry.studentName}</p>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-academic-surface flex items-center justify-center text-academic-accent">
+                          <User size={16} />
+                        </div>
+                        <p className="font-bold text-academic-primary">
+                          {entry.studentId === user.uid ? 'You' : entry.studentName}
+                          {entry.studentId === user.uid && <span className="ml-2 text-[8px] bg-academic-primary text-white px-2 py-0.5 rounded-full uppercase tracking-widest">Self</span>}
+                        </p>
+                      </div>
                     </td>
                     <td className="px-8 py-6">
-                      <span className="font-bold text-[#5A5A40]">{entry.totalScore.toFixed(1)}%</span>
+                      <span className="font-bold text-academic-primary font-display">{entry.totalScore.toFixed(1)}%</span>
                     </td>
-                    <td className="px-8 py-6 text-sm text-[#5A5A40]/60">
-                      {entry.quizzesTaken}
+                    <td className="px-8 py-6 text-sm text-academic-secondary/60">
+                      {entry.quizzesTaken} Quizzes
                     </td>
                   </tr>
                 ))}
+                {leaderboard.filter(entry => entry.studentName.toLowerCase().includes(leaderboardSearch.toLowerCase())).length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="px-8 py-20 text-center text-academic-secondary/40 italic">
+                      {leaderboard.length === 0 ? "No submitted quizzes found. Complete a quiz to appear on the leaderboard!" : "No students found matching your search."}
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -582,8 +627,8 @@ export default function StudentDashboard({ user }: StudentDashboardProps) {
       {activeTab === 'progress' && (
         <div className="space-y-10">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white p-8 rounded-[32px] border border-[#5A5A40]/10 shadow-sm">
-              <h3 className="text-xl font-bold text-[#5A5A40] mb-6">Performance by Department</h3>
+            <div className="academic-card p-8">
+              <h3 className="text-xl font-bold text-academic-primary mb-6 font-display">Performance by Department</h3>
               <div className="space-y-6">
                 {(Object.entries(
                   submissions.reduce((acc, sub) => {
@@ -598,45 +643,48 @@ export default function StudentDashboard({ user }: StudentDashboardProps) {
                   return (
                     <div key={dept} className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span className="font-bold text-[#5A5A40]">{dept}</span>
-                        <span className="text-[#5A5A40]/60">{avg.toFixed(1)}%</span>
+                        <span className="font-bold text-academic-primary">{dept}</span>
+                        <span className="text-academic-secondary/60">{avg.toFixed(1)}%</span>
                       </div>
-                      <div className="h-2 bg-[#5A5A40]/5 rounded-full overflow-hidden">
+                      <div className="h-2 bg-academic-surface rounded-full overflow-hidden">
                         <motion.div 
                           initial={{ width: 0 }}
                           animate={{ width: `${avg}%` }}
-                          className="h-full bg-[#5A5A40]"
+                          className="h-full bg-academic-accent"
                         />
                       </div>
                     </div>
                   );
                 })}
                 {submissions.length === 0 && (
-                  <p className="text-[#5A5A40]/40 italic text-center py-10">No data available yet.</p>
+                  <p className="text-academic-secondary/40 italic text-center py-10">No data available yet.</p>
                 )}
               </div>
             </div>
 
-            <div className="bg-white p-8 rounded-[32px] border border-[#5A5A40]/10 shadow-sm">
-              <h3 className="text-xl font-bold text-[#5A5A40] mb-6">Quiz Attempt History</h3>
+            <div className="academic-card p-8">
+              <h3 className="text-xl font-bold text-academic-primary mb-6 font-display">Quiz Attempt History</h3>
               <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                {submissions.sort((a, b) => new Date(b.submitTime || '').getTime() - new Date(a.submitTime || '').getTime()).map((sub) => (
-                  <div key={sub.id} className="flex items-center justify-between p-4 bg-[#5A5A40]/2 rounded-2xl border border-[#5A5A40]/5">
+                {submissions
+                  .filter(s => s.status !== 'ongoing')
+                  .sort((a, b) => new Date(b.submitTime || '').getTime() - new Date(a.submitTime || '').getTime())
+                  .map((sub) => (
+                  <div key={sub.id} className="flex items-center justify-between p-4 bg-academic-surface/50 rounded-2xl border border-academic-border">
                     <div>
-                      <p className="font-bold text-[#5A5A40] text-sm">{quizzes[sub.quizId]?.title || 'Unknown Quiz'}</p>
-                      <p className="text-[10px] text-[#5A5A40]/40 uppercase tracking-widest">
+                      <p className="font-bold text-academic-primary text-sm">{quizzes[sub.quizId]?.title || 'Unknown Quiz'}</p>
+                      <p className="text-[10px] text-academic-secondary/40 uppercase tracking-widest">
                         {new Date(sub.submitTime || '').toLocaleDateString()} • {quizzes[sub.quizId]?.department || 'General'}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className={`font-bold ${sub.score && sub.score >= 40 ? 'text-green-600' : 'text-red-600'}`}>
+                      <p className={`font-bold font-display ${sub.score && sub.score >= 40 ? 'text-green-600' : 'text-red-600'}`}>
                         {sub.score?.toFixed(1)}%
                       </p>
                     </div>
                   </div>
                 ))}
-                {submissions.length === 0 && (
-                  <p className="text-[#5A5A40]/40 italic text-center py-10">No attempts recorded.</p>
+                {submissions.filter(s => s.status !== 'ongoing').length === 0 && (
+                  <p className="text-academic-secondary/40 italic text-center py-10">No attempts recorded.</p>
                 )}
               </div>
             </div>
@@ -646,39 +694,39 @@ export default function StudentDashboard({ user }: StudentDashboardProps) {
 
       {activeTab === 'profile' && (
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-[48px] border border-[#5A5A40]/10 shadow-sm overflow-hidden">
-            <div className="h-32 bg-[#5A5A40]/5 border-b border-[#5A5A40]/10 flex items-end justify-center pb-6">
-              <div className="h-24 w-24 bg-white rounded-full border-4 border-white shadow-lg flex items-center justify-center text-[#5A5A40] -mb-12 z-10">
+          <div className="academic-card rounded-[48px] overflow-hidden">
+            <div className="h-32 bg-academic-surface border-b border-academic-border flex items-end justify-center pb-6">
+              <div className="h-24 w-24 bg-white rounded-full border-4 border-white shadow-lg flex items-center justify-center text-academic-accent -mb-12 z-10">
                 <User size={48} />
               </div>
             </div>
             <div className="pt-16 pb-10 px-10 text-center">
-              <h3 className="text-2xl font-bold text-[#5A5A40] mb-1">{user.name}</h3>
-              <p className="text-[#5A5A40]/40 uppercase tracking-widest text-[10px] font-bold mb-8">@{user.username} • Student</p>
+              <h3 className="text-2xl font-bold text-academic-primary mb-1 font-display">{user.name}</h3>
+              <p className="text-academic-secondary/40 uppercase tracking-widest text-[10px] font-bold mb-8">@{user.username} • Student</p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-                <div className="p-6 bg-[#5A5A40]/2 rounded-3xl border border-[#5A5A40]/5">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/40 mb-2">Email Address</p>
-                  <p className="text-[#5A5A40] font-medium flex items-center gap-2"><Mail size={14} /> {user.email}</p>
+                <div className="p-6 bg-academic-surface/30 rounded-3xl border border-academic-border">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/40 mb-2">Email Address</p>
+                  <p className="text-academic-primary font-medium flex items-center gap-2"><Mail size={14} /> {user.email}</p>
                 </div>
-                <div className="p-6 bg-[#5A5A40]/2 rounded-3xl border border-[#5A5A40]/5">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/40 mb-2">Institution</p>
-                  <p className="text-[#5A5A40] font-medium flex items-center gap-2"><School size={14} /> {user.institution || 'Not specified'}</p>
+                <div className="p-6 bg-academic-surface/30 rounded-3xl border border-academic-border">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/40 mb-2">Institution</p>
+                  <p className="text-academic-primary font-medium flex items-center gap-2"><School size={14} /> {user.institution || 'Not specified'}</p>
                 </div>
-                <div className="p-6 bg-[#5A5A40]/2 rounded-3xl border border-[#5A5A40]/5">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/40 mb-2">Phone Number</p>
-                  <p className="text-[#5A5A40] font-medium flex items-center gap-2"><Phone size={14} /> {user.phoneNumber || 'Not specified'}</p>
+                <div className="p-6 bg-academic-surface/30 rounded-3xl border border-academic-border">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/40 mb-2">Phone Number</p>
+                  <p className="text-academic-primary font-medium flex items-center gap-2"><Phone size={14} /> {user.phoneNumber || 'Not specified'}</p>
                 </div>
-                <div className="p-6 bg-[#5A5A40]/2 rounded-3xl border border-[#5A5A40]/5">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/40 mb-2">Department</p>
-                  <p className="text-[#5A5A40] font-medium flex items-center gap-2"><BookOpen size={14} /> {user.department || 'Not specified'}</p>
+                <div className="p-6 bg-academic-surface/30 rounded-3xl border border-academic-border">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/40 mb-2">Department</p>
+                  <p className="text-academic-primary font-medium flex items-center gap-2"><BookOpen size={14} /> {user.department || 'Not specified'}</p>
                 </div>
               </div>
 
-              <div className="mt-10 pt-8 border-t border-[#5A5A40]/5">
+              <div className="mt-10 pt-8 border-t border-academic-border">
                 <button 
                   onClick={() => navigate('/profile')}
-                  className="px-8 py-3 bg-[#5A5A40] text-white rounded-full font-medium hover:bg-[#5A5A40]/90 transition-colors"
+                  className="academic-button-primary px-12"
                 >
                   Edit Profile
                 </button>
@@ -690,37 +738,37 @@ export default function StudentDashboard({ user }: StudentDashboardProps) {
 
       <AnimatePresence>
         {showEnrollModal && selectedSection && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/20 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-academic-primary/20 backdrop-blur-sm">
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-[32px] w-full max-w-md p-10 shadow-2xl relative"
+              className="bg-white rounded-[32px] w-full max-w-md p-10 shadow-2xl relative border border-academic-border"
             >
               <button 
                 onClick={() => setShowEnrollModal(false)}
-                className="absolute top-6 right-6 p-2 hover:bg-[#5A5A40]/5 rounded-full transition-colors"
+                className="absolute top-6 right-6 p-2 hover:bg-academic-surface rounded-full transition-colors text-academic-secondary"
               >
                 <XCircle size={24} />
               </button>
 
               <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-[#5A5A40]/5 rounded-full flex items-center justify-center text-[#5A5A40] mx-auto mb-4">
+                <div className="w-16 h-16 bg-academic-surface rounded-full flex items-center justify-center text-academic-accent mx-auto mb-4">
                   <Lock size={32} />
                 </div>
-                <h3 className="text-2xl font-bold text-[#5A5A40]">Enroll in Section</h3>
-                <p className="text-[#5A5A40]/60 italic">{selectedSection.name}</p>
+                <h3 className="text-2xl font-bold text-academic-primary font-display">Enroll in Section</h3>
+                <p className="text-academic-secondary/60 italic">{selectedSection.name}</p>
               </div>
 
               <div className="space-y-6">
                 {selectedSection.enrollmentPassword && (
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60">Enrollment Password</label>
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/60">Enrollment Password</label>
                     <input 
                       type="password" 
                       value={enrollPassword}
                       onChange={(e) => setEnrollPassword(e.target.value)}
-                      className="w-full px-4 py-3 rounded-2xl border border-[#5A5A40]/20 focus:outline-none focus:border-[#5A5A40] transition-all"
+                      className="w-full px-4 py-3 rounded-2xl border border-academic-border focus:outline-none focus:border-academic-accent focus:ring-4 focus:ring-academic-accent/5 transition-all"
                       placeholder="Enter password provided by teacher"
                     />
                   </div>
@@ -735,7 +783,7 @@ export default function StudentDashboard({ user }: StudentDashboardProps) {
 
                 <button 
                   onClick={handleEnroll}
-                  className="w-full py-4 bg-[#5A5A40] text-white rounded-full font-medium hover:bg-[#5A5A40]/90 transition-colors"
+                  className="academic-button-primary w-full py-4"
                 >
                   Confirm Enrollment
                 </button>

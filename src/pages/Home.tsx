@@ -243,46 +243,50 @@ export default function Home({ user }: HomeProps) {
   const [showAuth, setShowAuth] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#f5f5f0] font-serif overflow-x-hidden">
+    <div className="min-h-screen bg-academic-surface font-sans overflow-x-hidden">
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-[#5A5A40]/10 px-6 py-4">
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-academic-border px-8 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <div className="h-10 w-10 bg-[#5A5A40] rounded-full flex items-center justify-center text-white">
-              <GraduationCap size={24} />
+            <div className="h-10 w-10 bg-academic-accent rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+              <BookOpen size={24} />
             </div>
-            <span className="text-xl font-bold text-[#5A5A40] tracking-tight">EduQuiz <span className="italic font-light">Pro</span></span>
+            <span className="text-2xl font-display font-bold text-academic-primary tracking-tight">Academic<span className="text-academic-accent">Pro</span></span>
           </div>
-          <div className="flex items-center gap-6">
-            <button onClick={() => { setView('login'); setShowAuth(true); }} className="text-[#5A5A40] font-medium hover:text-[#5A5A40]/70 transition-colors">Login</button>
-            <button onClick={() => { setView('register'); setShowAuth(true); }} className="bg-[#5A5A40] text-white px-6 py-2 rounded-full font-medium hover:bg-[#5A5A40]/90 transition-colors">Get Started</button>
+          <div className="flex items-center gap-8">
+            <button onClick={() => { setView('login'); setShowAuth(true); }} className="text-academic-secondary font-semibold hover:text-academic-accent transition-all">Login</button>
+            <button onClick={() => { setView('register'); setShowAuth(true); }} className="academic-button-primary">Get Started</button>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <section className="pt-40 pb-24 px-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <motion.div 
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-6xl lg:text-7xl font-bold text-[#5A5A40] leading-tight mb-6 tracking-tight">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-academic-accent rounded-full text-xs font-bold uppercase tracking-widest mb-8 border border-blue-100">
+              <ShieldCheck size={14} />
+              University Standard Assessments
+            </div>
+            <h1 className="text-6xl lg:text-8xl font-display font-bold text-academic-primary leading-tight mb-8 tracking-tight">
               Elevate Your <br />
-              <span className="italic font-light text-[#5A5A40]/60">Academic Excellence</span>
+              <span className="text-academic-accent">Academic</span> Excellence
             </h1>
-            <p className="text-xl text-[#5A5A40]/60 mb-10 max-w-lg leading-relaxed italic">
-              The most advanced university-level online quiz system designed for rigorous assessment and real-time monitoring.
+            <p className="text-xl text-academic-secondary/60 mb-12 max-w-lg leading-relaxed">
+              The most advanced university-level online quiz system designed for rigorous assessment, real-time monitoring, and deep academic insights.
             </p>
-            <div className="flex gap-4">
+            <div className="flex gap-6">
               <button 
                 onClick={() => { setView('register'); setShowAuth(true); }}
-                className="bg-[#5A5A40] text-white px-10 py-4 rounded-full font-medium hover:bg-[#5A5A40]/90 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+                className="academic-button-primary flex items-center gap-2"
               >
                 Start for Free <ChevronRight size={20} />
               </button>
-              <button className="bg-white text-[#5A5A40] border border-[#5A5A40]/20 px-10 py-4 rounded-full font-medium hover:bg-[#5A5A40]/5 transition-all">
+              <button className="academic-button-outline">
                 View Demo
               </button>
             </div>
@@ -293,46 +297,50 @@ export default function Home({ user }: HomeProps) {
             transition={{ duration: 0.8 }}
             className="relative"
           >
-            <div className="aspect-square bg-[#5A5A40]/5 rounded-[64px] overflow-hidden border border-[#5A5A40]/10 shadow-2xl">
-              <img 
-                src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=1000" 
-                alt="Students studying" 
-                className="w-full h-full object-cover mix-blend-multiply opacity-80"
-                referrerPolicy="no-referrer"
-              />
+            <div className="aspect-square bg-white rounded-[64px] overflow-hidden border border-academic-border shadow-2xl p-4">
+              <div className="w-full h-full rounded-[48px] overflow-hidden relative">
+                <img 
+                  src="https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=1000" 
+                  alt="Students studying" 
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-academic-primary/40 to-transparent" />
+              </div>
             </div>
-            <div className="absolute -bottom-10 -left-10 bg-white p-8 rounded-[32px] shadow-2xl border border-[#5A5A40]/10 max-w-xs">
+            <div className="absolute -bottom-10 -left-10 bg-white p-8 rounded-[32px] shadow-2xl border border-academic-border max-w-xs">
               <div className="flex items-center gap-4 mb-4">
-                <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+                <div className="h-12 w-12 bg-green-50 rounded-2xl flex items-center justify-center text-green-600 border border-green-100">
                   <ShieldCheck size={24} />
                 </div>
-                <h4 className="font-bold text-[#5A5A40]">Anti-Cheat Pro</h4>
+                <h4 className="font-bold text-academic-primary">Anti-Cheat Pro</h4>
               </div>
-              <p className="text-sm text-[#5A5A40]/60 italic">Real-time fullscreen monitoring and violation tracking for secure assessments.</p>
+              <p className="text-sm text-academic-secondary/60 leading-relaxed">Real-time violation tracking and secure environment for trusted assessments.</p>
             </div>
           </motion.div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-[#5A5A40] mb-4">Designed for Modern Education</h2>
-            <p className="text-[#5A5A40]/60 italic">Comprehensive tools for both educators and students.</p>
+      <section className="py-32 bg-white relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-academic-border to-transparent" />
+        <div className="max-w-7xl mx-auto px-8">
+          <div className="text-center mb-20">
+            <h2 className="text-4xl lg:text-5xl font-display font-bold text-academic-primary mb-6">Designed for Modern Education</h2>
+            <p className="text-xl text-academic-secondary/60 max-w-2xl mx-auto">Comprehensive tools built to meet the rigorous standards of higher education institutions.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
             {[
-              { icon: <BookOpen />, title: "Smart Assessments", desc: "Create complex quizzes with multiple question types and automated grading." },
-              { icon: <BarChart3 />, title: "Deep Analytics", desc: "Gain insights into class performance and identify difficult topics instantly." },
-              { icon: <Users />, title: "Collaborative Learning", desc: "Foster competition with real-time leaderboards and progress tracking." }
+              { icon: <BookOpen />, title: "Smart Assessments", desc: "Create complex quizzes with multiple question types, automated grading, and rich media support." },
+              { icon: <BarChart3 />, title: "Deep Analytics", desc: "Gain actionable insights into class performance and identify difficult topics with automated analysis." },
+              { icon: <Users />, title: "Collaborative Learning", desc: "Foster healthy competition with real-time leaderboards and personalized progress tracking." }
             ].map((f, i) => (
-              <div key={i} className="p-10 rounded-[40px] border border-[#5A5A40]/10 hover:border-[#5A5A40]/30 transition-all group">
-                <div className="h-14 w-14 bg-[#5A5A40]/5 rounded-2xl flex items-center justify-center text-[#5A5A40] mb-6 group-hover:bg-[#5A5A40] group-hover:text-white transition-all">
+              <div key={i} className="p-10 rounded-[40px] border border-academic-border hover:border-academic-accent/30 hover:bg-academic-surface transition-all group relative overflow-hidden">
+                <div className="h-16 w-16 bg-academic-surface rounded-2xl flex items-center justify-center text-academic-secondary mb-8 group-hover:bg-academic-accent group-hover:text-white transition-all duration-500 shadow-sm">
                   {f.icon}
                 </div>
-                <h3 className="text-xl font-bold text-[#5A5A40] mb-4">{f.title}</h3>
-                <p className="text-[#5A5A40]/60 leading-relaxed text-sm italic">{f.desc}</p>
+                <h3 className="text-2xl font-display font-bold text-academic-primary mb-4">{f.title}</h3>
+                <p className="text-academic-secondary/60 leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
@@ -342,62 +350,62 @@ export default function Home({ user }: HomeProps) {
       {/* Auth Modal */}
       <AnimatePresence>
         {showAuth && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-academic-primary/40 backdrop-blur-sm">
             <motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="max-w-2xl w-full bg-white rounded-[48px] shadow-2xl p-12 border border-[#5A5A40]/10 relative max-h-[90vh] overflow-y-auto custom-scrollbar"
+              className="max-w-2xl w-full bg-white rounded-[48px] shadow-2xl p-12 border border-academic-border relative max-h-[90vh] overflow-y-auto custom-scrollbar"
             >
               <button 
                 onClick={() => setShowAuth(false)}
-                className="absolute top-8 right-8 p-2 hover:bg-[#5A5A40]/5 rounded-full transition-colors text-[#5A5A40]/40 hover:text-[#5A5A40]"
+                className="absolute top-8 right-8 p-2 hover:bg-academic-surface rounded-full transition-colors text-academic-secondary/40 hover:text-academic-primary"
               >
                 <X size={24} />
               </button>
 
               <div className="mb-8 flex justify-center">
-                <div className="h-16 w-16 bg-[#5A5A40] rounded-full flex items-center justify-center text-white">
-                  <GraduationCap size={32} />
+                <div className="h-16 w-16 bg-academic-accent rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
+                  <BookOpen size={32} />
                 </div>
               </div>
 
-              <h1 className="text-4xl font-bold text-[#5A5A40] text-center mb-2 tracking-tight">
-                EduQuiz <span className="italic font-light">Pro</span>
+              <h1 className="text-4xl font-display font-bold text-academic-primary text-center mb-2 tracking-tight">
+                Academic<span className="text-academic-accent">Pro</span>
               </h1>
-              <p className="text-[#5A5A40]/60 text-center mb-10 italic">University-Level Online Quiz System</p>
+              <p className="text-academic-secondary/60 text-center mb-10 font-medium">University-Level Online Quiz System</p>
 
               {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl flex items-center gap-3 text-sm">
+                <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl flex items-center gap-3 text-sm font-medium">
                   <AlertCircle size={18} />
                   {error}
                 </div>
               )}
 
               {success && (
-                <div className="mb-6 p-4 bg-green-50 border border-green-100 text-green-600 rounded-2xl flex items-center gap-3 text-sm">
+                <div className="mb-6 p-4 bg-green-50 border border-green-100 text-green-600 rounded-2xl flex items-center gap-3 text-sm font-medium">
                   <CheckCircle size={18} />
                   {success}
                 </div>
               )}
 
-              <div className="flex gap-4 mb-8">
+              <div className="flex gap-4 p-1 bg-academic-surface rounded-full mb-10 border border-academic-border">
                 <button 
                   onClick={() => setView('login')}
-                  className={`flex-1 py-3 rounded-full border transition-all ${
+                  className={`flex-1 py-3 rounded-full font-bold transition-all ${
                     view === 'login' 
-                      ? 'bg-[#5A5A40] text-white border-[#5A5A40]' 
-                      : 'bg-transparent text-[#5A5A40] border-[#5A5A40]/20 hover:bg-[#5A5A40]/5'
+                      ? 'bg-white text-academic-primary shadow-sm' 
+                      : 'text-academic-secondary/60 hover:text-academic-primary'
                   }`}
                 >
                   Login
                 </button>
                 <button 
                   onClick={() => setView('register')}
-                  className={`flex-1 py-3 rounded-full border transition-all ${
+                  className={`flex-1 py-3 rounded-full font-bold transition-all ${
                     view === 'register' 
-                      ? 'bg-[#5A5A40] text-white border-[#5A5A40]' 
-                      : 'bg-transparent text-[#5A5A40] border-[#5A5A40]/20 hover:bg-[#5A5A40]/5'
+                      ? 'bg-white text-academic-primary shadow-sm' 
+                      : 'text-academic-secondary/60 hover:text-academic-primary'
                   }`}
                 >
                   Register
@@ -415,31 +423,31 @@ export default function Home({ user }: HomeProps) {
                     className="space-y-4"
                   >
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60">Email or Username</label>
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/60 ml-4">Email or Username</label>
                       <div className="relative">
-                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5A5A40]/40" size={18} />
+                        <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-academic-secondary/40" size={18} />
                         <input 
                           type="text" 
                           name="email"
                           required
                           value={formData.email}
                           onChange={handleInputChange}
-                          className="w-full pl-12 pr-4 py-3 rounded-2xl border border-[#5A5A40]/20 focus:outline-none focus:border-[#5A5A40] transition-all"
+                          className="w-full pl-14 pr-6 py-4 rounded-3xl border border-academic-border focus:outline-none focus:border-academic-accent focus:ring-4 focus:ring-blue-500/5 transition-all bg-academic-surface/50"
                           placeholder="Enter your email or username"
                         />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60">Password</label>
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/60 ml-4">Password</label>
                       <div className="relative">
-                        <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5A5A40]/40" size={18} />
+                        <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-academic-secondary/40" size={18} />
                         <input 
                           type="password" 
                           name="password"
                           required
                           value={formData.password}
                           onChange={handleInputChange}
-                          className="w-full pl-12 pr-4 py-3 rounded-2xl border border-[#5A5A40]/20 focus:outline-none focus:border-[#5A5A40] transition-all"
+                          className="w-full pl-14 pr-6 py-4 rounded-3xl border border-academic-border focus:outline-none focus:border-academic-accent focus:ring-4 focus:ring-blue-500/5 transition-all bg-academic-surface/50"
                           placeholder="Enter your password"
                         />
                       </div>
@@ -447,7 +455,7 @@ export default function Home({ user }: HomeProps) {
                     <button 
                       type="submit"
                       disabled={loading}
-                      className="w-full bg-[#5A5A40] text-white py-4 rounded-full font-medium hover:bg-[#5A5A40]/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="academic-button-primary w-full flex items-center justify-center gap-2 py-4"
                     >
                       {loading ? <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div> : <><LogIn size={18} /> Login</>}
                     </button>
@@ -461,33 +469,33 @@ export default function Home({ user }: HomeProps) {
                     onSubmit={handleRegister}
                     className="space-y-4"
                   >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60">Full Name</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/60 ml-4">Full Name</label>
                         <div className="relative">
-                          <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5A5A40]/40" size={18} />
+                          <User className="absolute left-5 top-1/2 -translate-y-1/2 text-academic-secondary/40" size={18} />
                           <input 
                             type="text" 
                             name="fullName"
                             required
                             value={formData.fullName}
                             onChange={handleInputChange}
-                            className="w-full pl-12 pr-4 py-3 rounded-2xl border border-[#5A5A40]/20 focus:outline-none focus:border-[#5A5A40] transition-all"
+                            className="w-full pl-14 pr-6 py-4 rounded-3xl border border-academic-border focus:outline-none focus:border-academic-accent transition-all bg-academic-surface/50"
                             placeholder="John Doe"
                           />
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60">Username</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/60 ml-4">Username</label>
                         <div className="relative">
-                          <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5A5A40]/40" size={18} />
+                          <User className="absolute left-5 top-1/2 -translate-y-1/2 text-academic-secondary/40" size={18} />
                           <input 
                             type="text" 
                             name="username"
                             required
                             value={formData.username}
                             onChange={handleInputChange}
-                            className="w-full pl-12 pr-4 py-3 rounded-2xl border border-[#5A5A40]/20 focus:outline-none focus:border-[#5A5A40] transition-all"
+                            className="w-full pl-14 pr-6 py-4 rounded-3xl border border-academic-border focus:outline-none focus:border-academic-accent transition-all bg-academic-surface/50"
                             placeholder="johndoe123"
                           />
                         </div>
@@ -495,109 +503,109 @@ export default function Home({ user }: HomeProps) {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60">Email Address</label>
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/60 ml-4">Email Address</label>
                       <div className="relative">
-                        <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5A5A40]/40" size={18} />
+                        <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-academic-secondary/40" size={18} />
                         <input 
                           type="email" 
                           name="email"
                           required
                           value={formData.email}
                           onChange={handleInputChange}
-                          className="w-full pl-12 pr-4 py-3 rounded-2xl border border-[#5A5A40]/20 focus:outline-none focus:border-[#5A5A40] transition-all"
+                          className="w-full pl-14 pr-6 py-4 rounded-3xl border border-academic-border focus:outline-none focus:border-academic-accent transition-all bg-academic-surface/50"
                           placeholder="john@university.edu"
                         />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60">Password</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/60 ml-4">Password</label>
                         <div className="relative">
-                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5A5A40]/40" size={18} />
+                          <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-academic-secondary/40" size={18} />
                           <input 
                             type="password" 
                             name="password"
                             required
                             value={formData.password}
                             onChange={handleInputChange}
-                            className="w-full pl-12 pr-4 py-3 rounded-2xl border border-[#5A5A40]/20 focus:outline-none focus:border-[#5A5A40] transition-all"
+                            className="w-full pl-14 pr-6 py-4 rounded-3xl border border-academic-border focus:outline-none focus:border-academic-accent transition-all bg-academic-surface/50"
                             placeholder="••••••••"
                           />
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60">Repeat Password</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/60 ml-4">Repeat Password</label>
                         <div className="relative">
-                          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5A5A40]/40" size={18} />
+                          <Lock className="absolute left-5 top-1/2 -translate-y-1/2 text-academic-secondary/40" size={18} />
                           <input 
                             type="password" 
                             name="repeatPassword"
                             required
                             value={formData.repeatPassword}
                             onChange={handleInputChange}
-                            className="w-full pl-12 pr-4 py-3 rounded-2xl border border-[#5A5A40]/20 focus:outline-none focus:border-[#5A5A40] transition-all"
+                            className="w-full pl-14 pr-6 py-4 rounded-3xl border border-academic-border focus:outline-none focus:border-academic-accent transition-all bg-academic-surface/50"
                             placeholder="••••••••"
                           />
                         </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60">Phone Number</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/60 ml-4">Phone Number</label>
                         <div className="relative">
-                          <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5A5A40]/40" size={18} />
+                          <Phone className="absolute left-5 top-1/2 -translate-y-1/2 text-academic-secondary/40" size={18} />
                           <input 
                             type="tel" 
                             name="phoneNumber"
                             value={formData.phoneNumber}
                             onChange={handleInputChange}
-                            className="w-full pl-12 pr-4 py-3 rounded-2xl border border-[#5A5A40]/20 focus:outline-none focus:border-[#5A5A40] transition-all"
+                            className="w-full pl-14 pr-6 py-4 rounded-3xl border border-academic-border focus:outline-none focus:border-academic-accent transition-all bg-academic-surface/50"
                             placeholder="+1 234 567 890"
                           />
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <label className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60">Date of Birth</label>
+                        <label className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/60 ml-4">Date of Birth</label>
                         <div className="relative">
-                          <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5A5A40]/40" size={18} />
+                          <Calendar className="absolute left-5 top-1/2 -translate-y-1/2 text-academic-secondary/40" size={18} />
                           <input 
                             type="date" 
                             name="dateOfBirth"
                             value={formData.dateOfBirth}
                             onChange={handleInputChange}
-                            className="w-full pl-12 pr-4 py-3 rounded-2xl border border-[#5A5A40]/20 focus:outline-none focus:border-[#5A5A40] transition-all"
+                            className="w-full pl-14 pr-6 py-4 rounded-3xl border border-academic-border focus:outline-none focus:border-academic-accent transition-all bg-academic-surface/50"
                           />
                         </div>
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60">School / University</label>
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/60 ml-4">School / University</label>
                       <div className="relative">
-                        <School className="absolute left-4 top-1/2 -translate-y-1/2 text-[#5A5A40]/40" size={18} />
+                        <School className="absolute left-5 top-1/2 -translate-y-1/2 text-academic-secondary/40" size={18} />
                         <input 
                           type="text" 
                           name="institution"
                           value={formData.institution}
                           onChange={handleInputChange}
-                          className="w-full pl-12 pr-4 py-3 rounded-2xl border border-[#5A5A40]/20 focus:outline-none focus:border-[#5A5A40] transition-all"
+                          className="w-full pl-14 pr-6 py-4 rounded-3xl border border-academic-border focus:outline-none focus:border-academic-accent transition-all bg-academic-surface/50"
                           placeholder="Harvard University"
                         />
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60">I am a...</label>
-                      <div className="flex gap-4">
+                      <label className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/60 ml-4">I am a...</label>
+                      <div className="flex gap-4 p-1 bg-academic-surface rounded-2xl border border-academic-border">
                         <button 
                           type="button"
                           onClick={() => setRole('student')}
-                          className={`flex-1 py-3 rounded-full border transition-all ${
+                          className={`flex-1 py-3 rounded-xl font-bold transition-all ${
                             role === 'student' 
-                              ? 'bg-[#5A5A40] text-white border-[#5A5A40]' 
-                              : 'bg-transparent text-[#5A5A40] border-[#5A5A40]/20 hover:bg-[#5A5A40]/5'
+                              ? 'bg-white text-academic-primary shadow-sm' 
+                              : 'text-academic-secondary/60 hover:text-academic-primary'
                           }`}
                         >
                           Student
@@ -605,10 +613,10 @@ export default function Home({ user }: HomeProps) {
                         <button 
                           type="button"
                           onClick={() => setRole('teacher')}
-                          className={`flex-1 py-3 rounded-full border transition-all ${
+                          className={`flex-1 py-3 rounded-xl font-bold transition-all ${
                             role === 'teacher' 
-                              ? 'bg-[#5A5A40] text-white border-[#5A5A40]' 
-                              : 'bg-transparent text-[#5A5A40] border-[#5A5A40]/20 hover:bg-[#5A5A40]/5'
+                              ? 'bg-white text-academic-primary shadow-sm' 
+                              : 'text-academic-secondary/60 hover:text-academic-primary'
                           }`}
                         >
                           Teacher
@@ -619,7 +627,7 @@ export default function Home({ user }: HomeProps) {
                     <button 
                       type="submit"
                       disabled={loading}
-                      className="w-full bg-[#5A5A40] text-white py-4 rounded-full font-medium hover:bg-[#5A5A40]/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="academic-button-primary w-full flex items-center justify-center gap-2 py-4"
                     >
                       {loading ? <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent"></div> : <><UserPlus size={18} /> Register</>}
                     </button>
@@ -627,22 +635,22 @@ export default function Home({ user }: HomeProps) {
                 )}
               </AnimatePresence>
 
-              <div className="mt-8 pt-8 border-t border-[#5A5A40]/10">
+              <div className="mt-10 pt-10 border-t border-academic-border">
                 <button 
                   onClick={handleGoogleLogin}
                   disabled={loading}
-                  className="w-full bg-white text-[#5A5A40] border border-[#5A5A40]/20 py-4 rounded-full flex items-center justify-center gap-3 font-medium hover:bg-[#5A5A40]/5 transition-colors disabled:opacity-50"
+                  className="w-full bg-white text-academic-primary border border-academic-border py-4 rounded-3xl flex items-center justify-center gap-3 font-bold hover:bg-academic-surface transition-all disabled:opacity-50 shadow-sm"
                 >
                   <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/action/google.svg" alt="Google" className="w-5 h-5" />
                   Continue with Google
                 </button>
               </div>
 
-              <div className="mt-8 flex justify-center">
+              <div className="mt-10 flex justify-center">
                 <button 
                   onClick={seedTestAccounts}
                   disabled={loading}
-                  className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/40 hover:text-[#5A5A40] transition-colors"
+                  className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/40 hover:text-academic-accent transition-colors"
                 >
                   Seed Test Accounts
                 </button>
@@ -653,18 +661,18 @@ export default function Home({ user }: HomeProps) {
       </AnimatePresence>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-[#5A5A40]/10 bg-white">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
+      <footer className="py-20 border-t border-academic-border bg-white">
+        <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-12">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-[#5A5A40] rounded-full flex items-center justify-center text-white">
-              <GraduationCap size={16} />
+            <div className="h-10 w-10 bg-academic-primary rounded-xl flex items-center justify-center text-white">
+              <BookOpen size={20} />
             </div>
-            <span className="font-bold text-[#5A5A40]">EduQuiz Pro</span>
+            <span className="text-xl font-display font-bold text-academic-primary">AcademicPro</span>
           </div>
-          <p className="text-sm text-[#5A5A40]/40 italic">© 2026 EduQuiz Pro. All rights reserved.</p>
-          <div className="flex gap-6">
-            <a href="#" className="text-sm text-[#5A5A40]/60 hover:text-[#5A5A40]">Privacy Policy</a>
-            <a href="#" className="text-sm text-[#5A5A40]/60 hover:text-[#5A5A40]">Terms of Service</a>
+          <p className="text-sm text-academic-secondary/40 font-medium">© 2026 AcademicPro. All rights reserved.</p>
+          <div className="flex gap-10">
+            <a href="#" className="text-sm font-bold text-academic-secondary/60 hover:text-academic-accent transition-colors">Privacy Policy</a>
+            <a href="#" className="text-sm font-bold text-academic-secondary/60 hover:text-academic-accent transition-colors">Terms of Service</a>
           </div>
         </div>
       </footer>

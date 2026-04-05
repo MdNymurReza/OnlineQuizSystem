@@ -50,14 +50,15 @@ export default function QuizResult({ user }: QuizResultProps) {
   if (!submission || !quiz) return <div className="flex h-screen items-center justify-center">Result not found.</div>;
 
   const totalPoints = questions.reduce((acc, q) => acc + q.points, 0);
-  const percentage = (submission.score / totalPoints) * 100;
+  const score = submission.score ?? 0;
+  const percentage = totalPoints > 0 ? (score / totalPoints) * 100 : 0;
 
   return (
-    <div className="min-h-screen bg-[#f5f5f0] p-6 font-serif">
+    <div className="min-h-screen bg-academic-surface p-6 font-sans">
       <div className="max-w-4xl mx-auto">
         <button 
           onClick={() => navigate('/student')}
-          className="mb-8 flex items-center gap-2 text-[#5A5A40]/60 hover:text-[#5A5A40] transition-colors font-medium"
+          className="mb-8 flex items-center gap-2 text-academic-secondary/60 hover:text-academic-primary transition-colors font-medium"
         >
           <ChevronLeft size={20} />
           Back to Dashboard
@@ -66,9 +67,9 @@ export default function QuizResult({ user }: QuizResultProps) {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-[48px] border border-[#5A5A40]/10 shadow-sm overflow-hidden mb-10"
+          className="bg-white rounded-[48px] border border-academic-border shadow-sm overflow-hidden mb-10"
         >
-          <div className="bg-[#5A5A40] p-12 text-center text-white">
+          <div className="bg-academic-primary p-12 text-center text-white">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-white/10 rounded-full mb-6">
               <Trophy size={40} className="text-white" />
             </div>
@@ -92,7 +93,7 @@ export default function QuizResult({ user }: QuizResultProps) {
           </div>
 
           <div className="p-12">
-            <h2 className="text-2xl font-bold text-[#5A5A40] mb-8 flex items-center gap-3">
+            <h2 className="text-2xl font-bold text-academic-primary mb-8 flex items-center gap-3">
               <BookOpen size={24} />
               Review Answers
             </h2>
@@ -108,10 +109,10 @@ export default function QuizResult({ user }: QuizResultProps) {
                   }`}>
                     <div className="flex justify-between items-start mb-6">
                       <div className="flex gap-4">
-                        <span className="h-8 w-8 rounded-full bg-[#5A5A40]/5 flex items-center justify-center text-[#5A5A40] font-bold text-sm">
+                        <span className="h-8 w-8 rounded-full bg-academic-surface flex items-center justify-center text-academic-primary font-bold text-sm border border-academic-border">
                           {idx + 1}
                         </span>
-                        <h3 className="text-lg font-bold text-[#5A5A40] leading-relaxed">{q.text}</h3>
+                        <h3 className="text-lg font-bold text-academic-primary leading-relaxed">{q.text}</h3>
                       </div>
                       <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest ${
                         isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
@@ -122,27 +123,27 @@ export default function QuizResult({ user }: QuizResultProps) {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-12">
-                      <div className="p-4 rounded-2xl bg-white border border-[#5A5A40]/5">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/40 mb-1">Your Answer</p>
+                      <div className="p-4 rounded-2xl bg-white border border-academic-border">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/40 mb-1">Your Answer</p>
                         <p className={`font-medium ${isCorrect ? 'text-green-700' : 'text-red-700'}`}>
                           {studentAns || 'No answer provided'}
                         </p>
                       </div>
                       {!isCorrect && (
-                        <div className="p-4 rounded-2xl bg-white border border-[#5A5A40]/5">
-                          <p className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/40 mb-1">Correct Answer</p>
+                        <div className="p-4 rounded-2xl bg-white border border-academic-border">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/40 mb-1">Correct Answer</p>
                           <p className="font-medium text-green-700">{q.correctAnswer}</p>
                         </div>
                       )}
                     </div>
 
                     {q.explanation && (
-                      <div className="mt-6 ml-12 p-6 bg-[#5A5A40]/5 rounded-2xl border border-[#5A5A40]/10">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/40 mb-2 flex items-center gap-2">
+                      <div className="mt-6 ml-12 p-6 bg-academic-surface rounded-2xl border border-academic-border">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-academic-secondary/40 mb-2 flex items-center gap-2">
                           <HelpCircle size={12} />
                           Explanation
                         </p>
-                        <p className="text-[#5A5A40]/80 text-sm italic leading-relaxed">
+                        <p className="text-academic-secondary/80 text-sm italic leading-relaxed">
                           {q.explanation}
                         </p>
                       </div>

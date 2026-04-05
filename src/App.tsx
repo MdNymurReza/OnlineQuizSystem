@@ -39,10 +39,10 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-[#f5f5f0]">
+      <div className="flex h-screen items-center justify-center bg-academic-surface">
         <div className="text-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#5A5A40] border-t-transparent mx-auto"></div>
-          <p className="mt-4 text-[#5A5A40] font-serif italic">Loading EduQuiz Pro...</p>
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-academic-accent border-t-transparent mx-auto"></div>
+          <p className="mt-4 text-academic-primary font-display font-medium">Loading Academic Pro...</p>
         </div>
       </div>
     );
@@ -64,10 +64,16 @@ export default function App() {
           />
           <Route 
             path="/admin" 
-            element={user?.role === 'admin' ? <AdminDashboard user={user} /> : <Navigate to="/unauthorized" />} 
+            element={user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/unauthorized" />} 
           />
-          <Route path="/profile" element={<Profile user={user} />} />
-          <Route path="/leaderboard" element={<Leaderboard user={user} />} />
+          <Route
+            path="/profile"
+            element={user ? <Profile user={user} /> : <Navigate to="/unauthorized" />}
+          />
+          <Route
+            path="/leaderboard"
+            element={user ? <Leaderboard user={user} /> : <Navigate to="/unauthorized" />}
+          />
           <Route path="/unauthorized" element={<Unauthorized />} />
         </Route>
 

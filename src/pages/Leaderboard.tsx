@@ -9,8 +9,18 @@ interface LeaderboardProps {
   user: UserProfile;
 }
 
+interface LeaderboardEntry {
+  id: string;
+  studentId: string;
+  studentName: string;
+  score: number;
+  quizzesTaken: number;
+  quizTitle?: string;
+  sectionId?: string;
+}
+
 export default function Leaderboard({ user }: LeaderboardProps) {
-  const [submissions, setSubmissions] = useState<(Submission & { quizTitle?: string, sectionId?: string })[]>([]);
+  const [submissions, setSubmissions] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [sections, setSections] = useState<Section[]>([]);
@@ -31,11 +41,14 @@ export default function Leaderboard({ user }: LeaderboardProps) {
         const q = query(
           collection(db, 'submissions'),
           where('status', '==', 'submitted'),
-          orderBy('score', 'desc'),
-          limit(100)
+          limit(200)
         );
         const snapshot = await getDocs(q);
         const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Submission));
+        
+        if (data.length === 0) {
+          console.log("No submitted quizzes found for global leaderboard.");
+        }
         
         // Fetch quiz details to get titles and sectionIds
         const quizIds = Array.from(new Set(data.map(s => s.quizId)));
@@ -47,22 +60,36 @@ export default function Leaderboard({ user }: LeaderboardProps) {
           }
         }
 
-        // Group by student and take their best score
-        const bestScores: Record<string, Submission & { quizTitle?: string, sectionId?: string }> = {};
+        // Group by student and calculate average score
+        const studentStats: Record<string, { totalScore: number, count: number, name: string, lastQuizTitle?: string, sectionId?: string }> = {};
         data.forEach(sub => {
           const quiz = quizMap[sub.quizId];
-          if (!bestScores[sub.studentId] || (sub.score || 0) > (bestScores[sub.studentId].score || 0)) {
-            bestScores[sub.studentId] = { 
-              ...sub, 
-              quizTitle: quiz?.title,
-              sectionId: quiz?.sectionId 
+          if (!studentStats[sub.studentId]) {
+            studentStats[sub.studentId] = { 
+              totalScore: 0, 
+              count: 0, 
+              name: sub.studentName,
+              lastQuizTitle: quiz?.title,
+              sectionId: quiz?.sectionId
             };
           }
+          studentStats[sub.studentId].totalScore += sub.score || 0;
+          studentStats[sub.studentId].count += 1;
         });
 
-        setSubmissions(Object.values(bestScores).sort((a, b) => (b.score || 0) - (a.score || 0)));
+        const entries = Object.entries(studentStats).map(([id, stats]) => ({
+          id,
+          studentId: id,
+          studentName: stats.name,
+          score: stats.totalScore / stats.count,
+          quizzesTaken: stats.count,
+          quizTitle: stats.lastQuizTitle,
+          sectionId: stats.sectionId
+        })).sort((a, b) => b.score - a.score);
+
+        setSubmissions(entries as any);
       } catch (error) {
-        console.error("Error fetching leaderboard:", error);
+        console.error("Error fetching leaderboard in Leaderboard page:", error);
       } finally {
         setLoading(false);
       }
@@ -133,7 +160,10 @@ export default function Leaderboard({ user }: LeaderboardProps) {
               Rank #{idx + 1}
             </p>
             <h3 className="text-xl font-bold mb-2 truncate px-4">{sub.studentName}</h3>
-            <p className={`text-3xl font-bold ${idx === 0 ? 'text-white' : 'text-[#5A5A40]'}`}>{sub.score} pts</p>
+            <p className={`text-3xl font-bold ${idx === 0 ? 'text-white' : 'text-[#5A5A40]'}`}>{sub.score.toFixed(1)}%</p>
+            <p className={`text-[10px] font-bold uppercase tracking-widest mt-2 ${idx === 0 ? 'text-white/40' : 'text-[#5A5A40]/30'}`}>
+              {sub.quizzesTaken} Quizzes Taken
+            </p>
           </motion.div>
         ))}
       </div>
@@ -144,12 +174,12 @@ export default function Leaderboard({ user }: LeaderboardProps) {
             <tr className="bg-[#5A5A40]/5">
               <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60">Rank</th>
               <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60">Student</th>
-              <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60">Quiz</th>
-              <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60 text-right">Best Score</th>
+              <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60">Quizzes</th>
+              <th className="px-8 py-6 text-[10px] font-bold uppercase tracking-widest text-[#5A5A40]/60 text-right">Avg. Score</th>
             </tr>
           </thead>
           <tbody>
-            {filteredSubmissions.map((sub, idx) => (
+            {filteredSubmissions.map((sub: any, idx) => (
               <tr key={sub.id} className="border-b border-[#5A5A40]/5 hover:bg-[#5A5A40]/2 transition-colors">
                 <td className="px-8 py-6">
                   <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full font-bold text-sm ${
@@ -167,11 +197,10 @@ export default function Leaderboard({ user }: LeaderboardProps) {
                   </div>
                 </td>
                 <td className="px-8 py-6">
-                  <span className="text-sm text-[#5A5A40]/60 italic">{sub.quizTitle || 'Unknown Quiz'}</span>
+                  <span className="text-sm text-[#5A5A40]/60 italic">{sub.quizzesTaken} Quizzes</span>
                 </td>
                 <td className="px-8 py-6 text-right">
-                  <span className="font-bold text-[#5A5A40] text-lg">{sub.score}</span>
-                  <span className="text-[#5A5A40]/40 text-xs ml-1">pts</span>
+                  <span className="font-bold text-[#5A5A40] text-lg">{sub.score.toFixed(1)}%</span>
                 </td>
               </tr>
             ))}
